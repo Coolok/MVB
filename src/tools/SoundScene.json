@@ -1,0 +1,254 @@
+{
+  "ID": "a2ee0952-26b5-49ae-8bf9-4f1d6279b798",
+  "Version": "2.2.1.0",
+  "Name": "SoundScene",
+  "Content": {
+    "Content": {
+      "Animation": {
+        "Duration": 0,
+        "Speed": 1.0,
+        "Timelines": [],
+        "ctype": "TimelineActionData"
+      },
+      "AnimationList": [],
+      "ObjectData": {
+        "PrePosition": {
+          "X": 0.0,
+          "Y": 0.0
+        },
+        "PreSize": {
+          "X": 0.0,
+          "Y": 0.0
+        },
+        "RightMargin": -960.0,
+        "TopMargin": -640.0,
+        "Children": [
+          {
+            "FileData": {
+              "Type": "Default",
+              "Path": "Default/Sprite.png"
+            },
+            "Tag": 5,
+            "PrePosition": {
+              "X": 0.5,
+              "Y": 0.5
+            },
+            "PreSize": {
+              "X": 0.0,
+              "Y": 0.0
+            },
+            "ActionTag": 953446860,
+            "Position": {
+              "X": 480.0,
+              "Y": 320.0
+            },
+            "Scale": {
+              "ScaleX": 1.0,
+              "ScaleY": 1.0
+            },
+            "AnchorPoint": {
+              "ScaleX": 0.5,
+              "ScaleY": 0.5
+            },
+            "CColor": {},
+            "Size": {
+              "X": 46.0,
+              "Y": 46.0
+            },
+            "FrameEvent": "",
+            "Name": "Default",
+            "ctype": "SpriteObjectData"
+          },
+          {
+            "FileData": {
+              "Type": "Normal",
+              "Path": "charMonsters.png"
+            },
+            "Tag": 1703,
+            "PrePosition": {
+              "X": 0.499478161,
+              "Y": 0.356510282
+            },
+            "PreSize": {
+              "X": 0.0,
+              "Y": 0.0
+            },
+            "LeftMargin": 349.499023,
+            "RightMargin": 350.500977,
+            "TopMargin": 281.833435,
+            "BottomMargin": 98.16658,
+            "ActionTag": -508194230,
+            "Position": {
+              "X": 479.499023,
+              "Y": 228.16658
+            },
+            "Scale": {
+              "ScaleX": 1.723071,
+              "ScaleY": 1.55384231
+            },
+            "AnchorPoint": {
+              "ScaleX": 0.5,
+              "ScaleY": 0.5
+            },
+            "Alpha": 128,
+            "CColor": {},
+            "Size": {
+              "X": 260.0,
+              "Y": 260.0
+            },
+            "FrameEvent": "",
+            "Name": "charMonsters_1",
+            "ctype": "SpriteObjectData"
+          },
+          {
+            "FontSize": 10,
+            "ButtonText": "sounds",
+            "TextColor": {
+              "R": 65,
+              "G": 65,
+              "B": 70
+            },
+            "DisabledFileData": {
+              "Type": "Default",
+              "Path": "Default/Button_Disable.png"
+            },
+            "PressedFileData": {
+              "Type": "Normal",
+              "Path": "menu_button_active.png"
+            },
+            "NormalFileData": {
+              "Type": "Normal",
+              "Path": "menu_button.png"
+            },
+            "Scale9Enable": true,
+            "Scale9Width": 134,
+            "Scale9Height": 37,
+            "TouchEnable": true,
+            "Tag": 1708,
+            "PrePosition": {
+              "X": 0.5005162,
+              "Y": 0.7330663
+            },
+            "PreSize": {
+              "X": 0.0,
+              "Y": 0.0
+            },
+            "LeftMargin": 457.495544,
+            "RightMargin": 456.504456,
+            "TopMargin": 152.837555,
+            "BottomMargin": 451.162445,
+            "ActionTag": -584172435,
+            "Position": {
+              "X": 480.495544,
+              "Y": 469.162445
+            },
+            "Scale": {
+              "ScaleX": 4.58696651,
+              "ScaleY": 1.55554318
+            },
+            "AnchorPoint": {
+              "ScaleX": 0.5,
+              "ScaleY": 0.5
+            },
+            "CColor": {},
+            "Size": {
+              "X": 46.0,
+              "Y": 36.0
+            },
+            "FrameEvent": "",
+            "Name": "Button_3_0",
+            "ctype": "ButtonObjectData"
+          },
+          {
+            "FontSize": 10,
+            "ButtonText": "music",
+            "TextColor": {
+              "R": 65,
+              "G": 65,
+              "B": 70
+            },
+            "DisabledFileData": {
+              "Type": "Default",
+              "Path": "Default/Button_Disable.png"
+            },
+            "PressedFileData": {
+              "Type": "Normal",
+              "Path": "menu_button_active.png"
+            },
+            "NormalFileData": {
+              "Type": "Normal",
+              "Path": "menu_button.png"
+            },
+            "Scale9Enable": true,
+            "Scale9Width": 134,
+            "Scale9Height": 37,
+            "TouchEnable": true,
+            "Tag": 1709,
+            "PrePosition": {
+              "X": 0.5015508,
+              "Y": 0.62056
+            },
+            "PreSize": {
+              "X": 0.0,
+              "Y": 0.0
+            },
+            "LeftMargin": 458.48877,
+            "RightMargin": 455.51123,
+            "TopMargin": 224.841614,
+            "BottomMargin": 379.1584,
+            "ActionTag": -783168397,
+            "Position": {
+              "X": 481.48877,
+              "Y": 397.1584
+            },
+            "Scale": {
+              "ScaleX": 4.58696651,
+              "ScaleY": 1.55554318
+            },
+            "AnchorPoint": {
+              "ScaleX": 0.5,
+              "ScaleY": 0.5
+            },
+            "CColor": {},
+            "Size": {
+              "X": 46.0,
+              "Y": 36.0
+            },
+            "FrameEvent": "",
+            "Name": "Button_3_0_0",
+            "ctype": "ButtonObjectData"
+          }
+        ],
+        "Position": {
+          "X": 0.0,
+          "Y": 0.0
+        },
+        "Scale": {
+          "ScaleX": 1.0,
+          "ScaleY": 1.0
+        },
+        "AnchorPoint": {},
+        "CColor": {},
+        "Size": {
+          "X": 960.0,
+          "Y": 640.0
+        },
+        "FrameEvent": "",
+        "Name": "Scene",
+        "ctype": "SingleNodeObjectData"
+      },
+      "ctype": "GameProjectData"
+    },
+    "CameraPosition": {
+      "ValueX": 0.0,
+      "ValueY": 5.0,
+      "ValueZ": -1.0
+    },
+    "CameraRotation": {
+      "ValueX": 0.0,
+      "ValueY": 0.0,
+      "ValueZ": 0.0
+    }
+  },
+  "Type": "Scene"
+}

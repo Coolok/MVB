@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="20" height="10" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="map" tilewidth="32" tileheight="32">
+  <image source="map.png" width="128" height="128"/>
+ </tileset>
+ <tileset firstgid="17" name="hot_cave_min" tilewidth="32" tileheight="32">
+  <image source="hot_cave_min.jpg" width="640" height="320"/>
+ </tileset>
+ <layer name="background0" width="20" height="10">
+  <data encoding="base64" compression="zlib">
+   eJztjDkKACAQA71v/f9zTbHFErC00sAQwkCM+Xk1Q+D0C3+nTwsqaKod8CCI15sd+wgmWKoTyKCI15sd+w2SEAE+
+  </data>
+ </layer>
+ <layer name="background1" width="20" height="10">
+  <data encoding="base64" compression="zlib">
+   eJztjDkKACAQA71v/f9zTbHFErC00sAQwkCM+Xk1Q+D0C3+nTwsqaKod8CCI15sd+wgmWKoTyKCI15sd+w2SEAE+
+  </data>
+ </layer>
+</map>

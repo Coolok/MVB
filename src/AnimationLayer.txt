@@ -1,0 +1,1986 @@
+
+// define enum for runner status
+if(typeof RunnerStat == "undefined") {
+    var RunnerStat = {};
+    RunnerStat.running = 0;
+    RunnerStat.jumpUp = 1;
+    RunnerStat.jumpDown = 2;
+};
+
+var AnimationLayer = cc.Layer.extend({
+    spriteSheet: null,
+    runningAction: null,
+	flyingAction: null,
+    sprite: null,
+	spriteBullet: null,
+    projectile: null,
+    space:null,
+    body:null,
+    shape:null,
+	particleSrc : null,
+	mainChar:0,
+    rockets:[],
+	fire:[],
+	timeoutFlag : -1,
+	timeoutLargeFlag : -1,
+	tTimeout:0,
+    recognizer:null,
+    stat:RunnerStat.running,// init with running status
+    jumpUpAction:null,
+    jumpDownAction:null,
+
+    ctor:function (space) {
+        this._super();
+        this.space = space;
+        this.init();
+       this.rockets = [];
+	   this.dragonFire = [];
+	   this.fire = [];
+      this._debugNode = new cc.PhysicsDebugNode(this.space);
+       this._debugNode.setVisible(true);
+        // Parallax ratio and offset
+      this.addChild(this._debugNode, 10);
+    },
+    init:function () {
+        this._super();
+
+		/* this.wallBody = new cp.StaticBody();
+		 this.wallBody.setPos(cc.p(0,0));
+		 this.wallShape = new cp.BoxShape(this.wallBody,
+            10,
+            cc.director.getWinSize().height);
+		this.wallBody.addShape(this.wallShape)
+         this.space.addStaticShape(this.wallShape);
+		*/
+        // create sprite sheet
+        cc.spriteFrameCache.addSpriteFrames(res.runner_plist);
+        this.spriteSheet = new cc.SpriteBatchNode(res.runner_png);
+        this.addChild(this.spriteSheet);
+		
+		cc.spriteFrameCache.addSpriteFrames(res.charBig_plist);
+        this.spriteSheetChar = new cc.SpriteBatchNode(res.charBig_png);
+        this.addChild(this.spriteSheetChar);
+
+        //init  actions
+        this.initAction();
+
+        // init runningAction
+//        var animFrames = [];
+//        for (var i = 0; i < 8; i++) {
+//            var str = "runner" + i + ".png";
+//            var frame = cc.spriteFrameCache.getSpriteFrame(str);
+//            animFrames.push(frame);
+//        }
+//
+//      var animation = new cc.Animation(animFrames, 0.1);
+//      this.runningAction = new cc.RepeatForever(new cc.Animate(animation));
+
+
+        //create runner through physic engine
+        this.sprite = new cc.PhysicsSprite("#robo00.png");//dragon00
+		this.sprite.lives = 5;
+		this.sprite.stamina = 1;
+		this.sprite.rockets = 5;
+		this.sprite.fite_status = 0;
+		this.sprite.gun_heat = 0;
+        var contentSize = this.sprite.getContentSize();
+        // init body
+        this.body = new cp.Body(1, cp.momentForBox(1, contentSize.width, contentSize.height));
+        this.body.p = cc.p(g_runnerStartX, g_groundHeight + contentSize.height / 2);
+        this.body.applyImpulse(cp.v(10, 0), cp.v(0, 0));//run speed
+        this.space.addBody(this.body);
+        //init shape
+        this.shape = new cp.BoxShape(this.body, contentSize.width - 14, contentSize.height);
+		this.shape.setCollisionType(SpriteTag.runner);
+      
+        this.space.addShape(this.shape);
+        this.sprite.setTag(SpriteTag.runner)
+        this.sprite.setBody(this.body);
+        this.sprite.runAction(this.flyingAction6);//flyingAction10
+		this.sprite.undied = 666;
+		this.sprite.flag = 777;
+        this.spriteSheetChar.addChild(this.sprite);
+		
+		
+				///////////////////////////////////
+		//debugger;
+		/*this.spriteBullet1 = new cc.PhysicsSprite("#char00.png");
+		
+        var contentSize = this.spriteBullet1.getContentSize();
+        // init body
+        this.bodyBullet1 = new cp.Body(12, cp.momentForBox(1, contentSize.width, contentSize.height));
+        this.bodyBullet1.p = cc.p(this.getBoundingBox().width - contentSize.width, g_groundHeight + contentSize.height / 2);
+        //this.bodyBullet1.applyImpulse(cp.v(220, 30), cp.v(0, 0));//run speed
+        this.space.addBody(this.bodyBullet1);
+        //init shape
+        this.shapeBullet1 = new cp.BoxShape(this.bodyBullet1, contentSize.width - 14, contentSize.height);
+        this.space.addShape(this.shapeBullet1);
+
+        this.spriteBullet1.setBody(this.bodyBullet1);
+        this.spriteBullet1.runAction(this.flyingAction1);
+
+        this.spriteSheetChar.addChild(this.spriteBullet1);
+		*/
+		
+		//-------------------------------------------
+
+        this.spriteBullet2 = new cc.PhysicsSprite("#cristall00.png");
+		
+        var contentSize = this.spriteBullet2.getContentSize();
+        // init body
+        this.bodyBullet2 = new cp.Body(5, cp.momentForBox(1, contentSize.width, contentSize.height));
+        this.bodyBullet2.p = cc.p(g_runnerStartX, g_groundHeight + contentSize.height / 2);
+        //this.bodyBullet2.applyImpulse(cp.v(220, 30), cp.v(0, 0));//run speed
+        this.space.addBody(this.bodyBullet2);
+        //init shape
+        this.shape = new cp.BoxShape(this.bodyBullet2, contentSize.width - 14, contentSize.height);
+        //this.space.addShape(this.shape);
+
+        this.spriteBullet2.setBody(this.bodyBullet2);
+        this.spriteBullet2.runAction(this.flyingAction2);
+
+        //this.spriteSheetChar.addChild(this.spriteBullet2);	
+
+
+
+     /*   this.spriteBullet3 = new cc.PhysicsSprite("#green00.png");
+		
+        var contentSize = this.spriteBullet3.getContentSize();
+        // init body
+        this.bodyBullet3 = new cp.Body(7, cp.momentForBox(1, contentSize.width, contentSize.height));
+        this.bodyBullet3.p = cc.p(g_runnerStartX, g_groundHeight + contentSize.height / 2);
+        //this.bodyBullet3.applyImpulse(cp.v(220, 30), cp.v(0, 0));//run speed
+        this.space.addBody(this.bodyBullet3);
+        //init shape
+        this.shape = new cp.BoxShape(this.bodyBullet3, contentSize.width - 14, contentSize.height);
+        //this.space.addShape(this.shape);
+
+        this.spriteBullet3.setBody(this.bodyBullet3);
+        this.spriteBullet3.runAction(this.flyingAction3);
+
+        //this.spriteSheetChar.addChild(this.spriteBullet3);	
+		
+		*/
+		
+		 this.spriteBullet4 = new cc.PhysicsSprite("#chick00.png");
+		
+        var contentSize = this.spriteBullet4.getContentSize();
+        // init body
+        this.bodyBullet4 = new cp.Body(4, cp.momentForBox(1, contentSize.width, contentSize.height));
+        this.bodyBullet4.p = cc.p(g_runnerStartX, g_groundHeight + contentSize.height / 2);
+        //this.bodyBullet4.applyImpulse(cp.v(220, 30), cp.v(0, 0));//run speed
+        this.space.addBody(this.bodyBullet4);
+        //init shape
+        this.shape = new cp.BoxShape(this.bodyBullet4, contentSize.width - 14, contentSize.height);
+        //this.space.addShape(this.shape);
+
+        this.spriteBullet4.setBody(this.bodyBullet4);
+        this.spriteBullet4.runAction(this.flyingAction4);
+
+        //this.spriteSheetChar.addChild(this.spriteBullet4);	
+		
+		
+		 this.spriteBullet5 = new cc.PhysicsSprite("#eagle00.png");
+		
+        var contentSize = this.spriteBullet5.getContentSize();
+        // init body
+        this.bodyBullet5 = new cp.Body(12, cp.momentForBox(1, contentSize.width, contentSize.height));
+        this.bodyBullet5.p = cc.p(g_runnerStartX, g_groundHeight + contentSize.height / 2);
+        //this.bodyBullet5.applyImpulse(cp.v(220, 30), cp.v(0, 0));//run speed
+        this.space.addBody(this.bodyBullet5);
+        //init shape
+        this.shape = new cp.BoxShape(this.bodyBullet5, contentSize.width - 14, contentSize.height);
+        //this.space.addShape(this.shape);
+
+        this.spriteBullet5.setBody(this.bodyBullet5);
+        this.spriteBullet5.runAction(this.flyingAction5);
+
+        //this.spriteSheetChar.addChild(this.spriteBullet5);	
+
+
+
+	/*this.spriteBullet6 = new cc.PhysicsSprite("#robo00.png");
+		
+        var contentSize = this.spriteBullet6.getContentSize();
+        // init body
+        this.bodyBullet6 = new cp.Body(3, cp.momentForBox(1, contentSize.width, contentSize.height));
+        this.bodyBullet6.p = cc.p(g_runnerStartX, g_groundHeight + contentSize.height / 2);
+        //this.bodyBullet6.applyImpulse(cp.v(220, 30), cp.v(0, 0));//run speed
+        this.space.addBody(this.bodyBullet6);
+		 //this.bodyBullet6.applyForce(cp.v(220, 30), cp.v(220, 30));
+        //init shape
+        this.shape = new cp.BoxShape(this.bodyBullet6, contentSize.width - 14, contentSize.height);
+        //this.space.addShape(this.shape);
+
+		
+		
+        this.spriteBullet6.setBody(this.bodyBullet6);
+        this.spriteBullet6.runAction(this.flyingAction6);
+//this.spriteBullet6.body.setAngVel(0);
+        //this.spriteSheetChar.addChild(this.spriteBullet6);	
+		
+		*/
+		
+		this.spriteBullet7 = new cc.PhysicsSprite("#hat00.png");
+		
+        var contentSize = this.spriteBullet7.getContentSize();
+        // init body
+        this.bodyBullet7 = new cp.Body(3, cp.momentForBox(1, contentSize.width, contentSize.height));
+        this.bodyBullet7.p = cc.p(g_runnerStartX, g_groundHeight + contentSize.height / 2);
+        //this.bodyBullet7.applyImpulse(cp.v(220, 30), cp.v(0, 0));//run speed
+        this.space.addBody(this.bodyBullet7);
+		 //this.bodyBullet7.applyForce(cp.v(220, 30), cp.v(220, 30));
+        //init shape
+        this.shape = new cp.BoxShape(this.bodyBullet7, contentSize.width - 14, contentSize.height);
+        //this.space.addShape(this.shape);
+
+		
+		
+        this.spriteBullet7.setBody(this.bodyBullet7);
+        this.spriteBullet7.runAction(this.flyingAction7);
+//this.spriteBullet6.body.setAngVel(0);
+        //this.spriteSheetChar.addChild(this.spriteBullet7);	
+		
+		
+		
+		
+		
+		this.spriteBullet9 = new cc.PhysicsSprite("#pink00.png");
+		
+        var contentSize = this.spriteBullet9.getContentSize();
+        // init body
+        this.bodyBullet9 = new cp.Body(3, cp.momentForBox(1, contentSize.width, contentSize.height));
+        this.bodyBullet9.p = cc.p(g_runnerStartX, g_groundHeight + contentSize.height / 2);
+        //this.bodyBullet9.applyImpulse(cp.v(220, 30), cp.v(0, 0));//run speed
+        this.space.addBody(this.bodyBullet9);
+		 //this.bodyBullet9.applyForce(cp.v(220, 30), cp.v(220, 30));
+        //init shape
+        this.shape = new cp.BoxShape(this.bodyBullet9, contentSize.width - 14, contentSize.height);
+        //this.space.addShape(this.shape);
+        this.spriteBullet9.setBody(this.bodyBullet9);
+        this.spriteBullet9.runAction(this.flyingAction9);
+//this.spriteBullet6.body.setAngVel(0);
+        //this.spriteSheetChar.addChild(this.spriteBullet9);	
+		
+		
+		
+		
+		/*this.spriteBullet10 = new cc.PhysicsSprite("#dragon00.png");
+		
+        var contentSize = this.spriteBullet10.getContentSize();
+        // init body
+        this.bodyBullet10 = new cp.Body(3, cp.momentForBox(1, contentSize.width, contentSize.height));
+        this.bodyBullet10.p = cc.p(g_runnerStartX, g_groundHeight + contentSize.height / 2);
+        //this.bodyBullet10.applyImpulse(cp.v(220, 30), cp.v(0, 0));//run speed
+        this.space.addBody(this.bodyBullet10);
+		// this.bodyBullet10.applyForce(cp.v(220, 30), cp.v(220, 30));
+        //init shape
+        this.shape = new cp.BoxShape(this.bodyBullet10, contentSize.width - 14, contentSize.height);
+        //this.space.addShape(this.shape);
+        this.spriteBullet10.setBody(this.bodyBullet10);
+        this.spriteBullet10.runAction(this.flyingAction10);
+//this.spriteBullet6.body.setAngVel(0);
+        //this.spriteSheetChar.addChild(this.spriteBullet10);	*/
+		
+		
+		
+		///////////////////////////////////
+		
+		//debugger;
+	/*	this.spriteBullet = new cc.PhysicsSprite("#bomb00.png");
+		
+        var contentSize = this.spriteBullet.getContentSize();
+        // init body
+        this.bodyBullet = new cp.Body(1, cp.momentForBox(1, contentSize.width, contentSize.height));
+        this.bodyBullet.p = cc.p(g_runnerStartX, g_groundHeight + contentSize.height / 2);
+       // this.bodyBullet.applyImpulse(cp.v(220, 30), cp.v(0, 0));//run speed
+        this.space.addBody(this.bodyBullet);
+        //init shape
+        this.shape = new cp.BoxShape(this.bodyBullet, contentSize.width - 14, contentSize.height);
+        this.space.addShape(this.shape);
+
+        this.spriteBullet.setBody(this.bodyBullet);
+        this.spriteBullet.runAction(this.flyingAction);
+
+        this.spriteSheetChar.addChild(this.spriteBullet);	
+
+		*/
+		
+		
+		
+	/*	
+		 // Set up initial location of the projectile
+       this.projectile = new cc.PhysicsSprite("#runner0.png");
+		 var contentSize = this.projectile.getContentSize();
+		 
+		 
+      
+		 this.bodyProjectile = new cp.Body(1, cp.momentForBox(1, contentSize.width, contentSize.height));
+        // Determine offset of location to projectile
+        //var offset = cc.pSub(location, projectile.getPosition());
+
+		
+		
+		
+
+        this.bodyProjectile.p = cc.p(g_runnerStartX, g_groundHeight + contentSize.height / 2);
+        this.bodyProjectile.applyImpulse(cp.v(20, 210), cp.v(0, 0));//run speed
+        this.space.addBody(this.bodyProjectile);
+        //init shape
+        this.shapeProjectile = new cp.BoxShape(this.bodyProjectile, contentSize.width - 14, contentSize.height);
+        this.space.addShape(this.shapeProjectile);
+		this.projectile.setTag(200);
+        this.projectile.setBody(this.bodyProjectile);
+        this.projectile.runAction(this.runningAction);
+		*/
+		
+		
+		
+		
+		
+		
+		
+		
+		
+
+        //initialize the recognizer
+        this.recognizer = new SimpleRecognizer();
+		var thas=this;
+			if(cc.sys.capabilities.hasOwnProperty('keyboard')){
+		cc.eventManager.addListener({
+			event: cc.EventListener.KEYBOARD,
+			
+			onKeyPressed:this.onKeyPressed,
+		    
+			
+			onKeyReleased: this.onKeyUp
+		},this);
+	}
+
+       	if(cc.sys.capabilities.hasOwnProperty('mouse')){
+		cc.eventManager.addListener(
+			{
+				event: cc.EventListener.MOUSE,
+
+				//onMouseDown: this.locationTapped,
+				onMouseUp: this.locationTapped,
+				onMouseMove: function(event){
+					//cc.log('mouse move to '+ event.getDelta().x);
+				},
+				onMouseScroll: function(event){
+					//cc.log('scroll '+event.getScrollY());
+				}
+			},this
+		)
+	}
+
+	  cc.eventManager.addListener({
+            event: cc.EventListener.TOUCH_ONE_BY_ONE,
+            swallowTouches: true,
+            onTouchBegan: this.onTouchBegan,
+            onTouchMoved: this.onTouchMoved,
+            onTouchEnded: this.onTouchEnded
+        }, this)
+
+        this.scheduleUpdate();
+    },
+	
+	onKeyUp:function(key, event) {
+	//debugger;
+	
+	cc.log(key)
+	var thisLayer = event.getCurrentTarget();
+	
+	
+	if(key==67 &&  thisLayer.mainChar!=2){debugger;
+
+	
+	              thisLayer.mainChar=2;
+		            thisLayer.sprite.runAction(
+					    cc.sequence(
+							cc.tintTo(1,55,55,55), //color- time,RGB 
+							cc.FadeOut.create(1),
+							cc.moveTo(cc.p(g_runnerStartX, 2*g_groundHeight)),
+							cc.CallFunc.create(thisLayer.sprite.stopAllActions(), thisLayer)
+						)
+					);	
+		
+		
+		          //  thisLayer.space.removeBody( thisLayer.shape.getBody());//    1----shape
+				   // thisLayer.space.removeShape( thisLayer.shape);//                  2----body
+				  
+				   
+				   // thisLayer.sprite.removeFromParent();//         3----sprite
+				    //thisLayer.sprite = null;
+		
+		
+
+		
+	    thisLayer.sprite = new cc.PhysicsSprite("#dragon00.png");//dragon00
+        var contentSize = thisLayer.sprite.getContentSize();
+        // init body
+        thisLayer.body = new cp.Body(1, cp.momentForBox(1, contentSize.width, contentSize.height));
+        thisLayer.body.p = cc.p(g_runnerStartX, g_groundHeight + contentSize.height / 2);
+        thisLayer.body.applyImpulse(cp.v(10, 0), cp.v(0, 0));//run speed
+        thisLayer.space.addBody(thisLayer.body);
+        //init shape
+        thisLayer.shape = new cp.BoxShape(thisLayer.body, contentSize.width - 14, contentSize.height);
+        thisLayer.space.addShape(thisLayer.shape);
+        thisLayer.sprite.setTag(SpriteTag.runner)
+        thisLayer.sprite.setBody(thisLayer.body);
+        thisLayer.sprite.runAction(thisLayer.flyingAction10);//flyingAction10
+
+        thisLayer.spriteSheetChar.addChild(thisLayer.sprite);
+	}
+	
+	if(key==82 &&  thisLayer.mainChar!=0){debugger;
+
+	                thisLayer.mainChar=0;
+	
+		            thisLayer.sprite.runAction(
+					    cc.sequence(
+							cc.tintTo(1,55,55,55), //color- time,RGB 
+							cc.FadeOut.create(1),
+							cc.moveTo(cc.p(g_runnerStartX, 2*g_groundHeight)),
+							cc.CallFunc.create(thisLayer.sprite.stopAllActions(), thisLayer)
+						)
+					);	
+		
+		
+		          //  thisLayer.space.removeBody( thisLayer.shape.getBody());//    1----shape
+				   // thisLayer.space.removeShape( thisLayer.shape);//                  2----body
+				  
+				   
+				   // thisLayer.sprite.removeFromParent();//         3----sprite
+				    //thisLayer.sprite = null;
+		
+		
+
+		
+	    thisLayer.sprite = new cc.PhysicsSprite("#robo00.png");//dragon00
+        var contentSize = thisLayer.sprite.getContentSize();
+        // init body
+        thisLayer.body = new cp.Body(1, cp.momentForBox(1, contentSize.width, contentSize.height));
+        thisLayer.body.p = cc.p(g_runnerStartX, g_groundHeight + contentSize.height / 2);
+        thisLayer.body.applyImpulse(cp.v(10, 0), cp.v(0, 0));//run speed
+        thisLayer.space.addBody(thisLayer.body);
+        //init shape
+        thisLayer.shape = new cp.BoxShape(thisLayer.body, contentSize.width - 14, contentSize.height);
+		thisLayer.shape.setCollisionType(SpriteTag.runner);
+        thisLayer.space.addShape(thisLayer.shape);
+        thisLayer.sprite.setTag(SpriteTag.runner)
+        thisLayer.sprite.setBody(thisLayer.body);
+        thisLayer.sprite.runAction(thisLayer.flyingAction6);//flyingAction10
+
+        thisLayer.spriteSheetChar.addChild(thisLayer.sprite);
+	}
+	
+	if(key==71 &&  thisLayer.mainChar!=1){debugger;
+
+	                 thisLayer.mainChar=1;
+	
+		            thisLayer.sprite.runAction(
+					    cc.sequence(
+							cc.tintTo(1,55,55,55), //color- time,RGB 
+							cc.FadeOut.create(1),
+							cc.moveTo(cc.p(g_runnerStartX, 2*g_groundHeight)),
+							cc.CallFunc.create(thisLayer.sprite.stopAllActions(), thisLayer)
+						)
+					);	
+		
+		
+		          //  thisLayer.space.removeBody( thisLayer.shape.getBody());//    1----shape
+				   // thisLayer.space.removeShape( thisLayer.shape);//                  2----body
+				  
+				   
+				   // thisLayer.sprite.removeFromParent();//         3----sprite
+				    //thisLayer.sprite = null;
+		
+		
+
+		
+	    thisLayer.sprite = new cc.PhysicsSprite("#green00.png");//dragon00
+        var contentSize = thisLayer.sprite.getContentSize();
+        // init body
+        thisLayer.body = new cp.Body(1, cp.momentForBox(1, contentSize.width, contentSize.height));
+        thisLayer.body.p = cc.p(g_runnerStartX, g_groundHeight + contentSize.height / 2);
+        thisLayer.body.applyImpulse(cp.v(10, 0), cp.v(0, 0));//run speed
+        thisLayer.space.addBody(thisLayer.body);
+        //init shape
+        thisLayer.shape = new cp.BoxShape(thisLayer.body, contentSize.width - 14, contentSize.height);
+        thisLayer.space.addShape(thisLayer.shape);
+        thisLayer.sprite.setTag(SpriteTag.runner)
+        thisLayer.sprite.setBody(thisLayer.body);
+        thisLayer.sprite.runAction(thisLayer.flyingAction3);//flyingAction10
+
+        thisLayer.spriteSheetChar.addChild(thisLayer.sprite);
+	}
+
+	if(key==49){//one fire 1
+	cc.log(thisLayer.sprite.gun_heat)
+
+		if(thisLayer.sprite.gun_heat<10 && thisLayer.timeoutFlag == -1){
+		//////////////////////
+					
+		//////////////////////
+		    thisLayer.sprite.gun_heat += 1;
+			thisLayer.spriteFire = new cc.PhysicsSprite("#fire00.png");	
+			var contentSize = thisLayer.spriteFire.getContentSize();
+			thisLayer.bodyFire = new cp.Body(0.001, cp.momentForBox(1, 30*contentSize.width, 30*contentSize.height));
+			thisLayer.bodyFire.p = cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y-10);
+			thisLayer.space.addBody(thisLayer.bodyFire);
+			thisLayer.bodyFire.applyForce(cp.v(1, 0.35), cp.v(1, 0.35));
+			thisLayer.shapeFire = new cp.BoxShape(thisLayer.bodyFire, contentSize.width /2, contentSize.height);
+			thisLayer.shapeFire.setCollisionType(SpriteTag.fire);
+			thisLayer.space.addShape(thisLayer.shapeFire);
+			thisLayer.spriteFire.setBody(thisLayer.bodyFire);
+			thisLayer.spriteFire.setTag(thisLayer.shapeFire.hashid);
+			thisLayer.spriteSheetChar.addChild(thisLayer.spriteFire);	
+			thisLayer.fire.push({sprite:thisLayer.spriteFire,shape:thisLayer.shapeFire});
+			thisLayer.getParent().getParent().getChildByTag(TagOfLayer.Status).addCoin(thisLayer.sprite.gun_heat)
+			if(thisLayer.tTimeout === 0)thisLayer.tTimeout = setInterval(function(){//debugger
+				if(this.timeoutLargeFlag == -1 && this.sprite.gun_heat>0 )this.sprite.gun_heat--;
+				
+			}.bind(thisLayer),500);
+		} else if(thisLayer.timeoutLargeFlag == -1){
+		        if(thisLayer.tTimeout !== 0)clearInterval(thisLayer.tTimeout);
+//debugger
+
+
+					thisLayer.getParent().getParent().getChildByTag(TagOfLayer.Status).hot_bar.runAction(
+															 new cc.Repeat(
+																cc.sequence(
+																	 cc.FadeOut.create(.2),
+																	 cc.tintTo(.1,255,5,5),
+																	cc.FadeIn.create(.2),
+																	cc.tintTo(.1,255,255,255)
+																),5
+															)
+														);
+														//debugger
+					thisLayer.getParent().getParent().getChildByTag(TagOfLayer.Status).fires.runAction(
+															 new cc.Repeat(
+																cc.sequence(
+																	 cc.FadeOut.create(.2),
+																	 cc.tintTo(.1,255,5,5),
+																	cc.FadeIn.create(.2),
+																	cc.tintTo(.1,255,255,255)
+																),5
+															)
+														);
+		        thisLayer.timeoutLargeFlag = 1
+		        thisLayer.timeoutFlag = 1;
+				setTimeout(function(){//debugger
+			    this.sprite.gun_heat = 0;
+				this.timeoutFlag = -1;
+				this.timeoutLargeFlag = -1;
+				thisLayer.tTimeout = 0;
+				this.getParent().getParent().getChildByTag(TagOfLayer.Status).addCoin(this.sprite.gun_heat)
+			}.bind(thisLayer),3000);
+		}
+	}
+		
+	
+	if(key==50){//double fire 1
+		thisLayer.spriteFire = new cc.PhysicsSprite("#fire00.png");
+        var contentSize = thisLayer.spriteFire.getContentSize();
+        thisLayer.bodyFire = new cp.Body(0.001, cp.momentForBox(1, 30*contentSize.width, 30*contentSize.height));
+        thisLayer.bodyFire.p = cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y-10);
+        thisLayer.space.addBody(thisLayer.bodyFire);
+		thisLayer.bodyFire.applyForce(cp.v(1, 0.35), cp.v(1, 0.35));
+        thisLayer.shapeFire = new cp.BoxShape(thisLayer.bodyFire, contentSize.width /2, contentSize.height);
+		thisLayer.shapeFire.setCollisionType(SpriteTag.fire);
+        thisLayer.space.addShape(thisLayer.shapeFire);
+        thisLayer.spriteFire.setBody(thisLayer.bodyFire);
+		thisLayer.spriteFire.setTag(thisLayer.shapeFire.hashid);
+        thisLayer.spriteSheetChar.addChild(thisLayer.spriteFire);	
+	    thisLayer.fire.push({sprite:thisLayer.spriteFire,shape:thisLayer.shapeFire});
+		
+		thisLayer.spriteFireV = new cc.PhysicsSprite("#fire00.png");
+        thisLayer.bodyFireV = new cp.Body(0.001, cp.momentForBox(1, 30*contentSize.width, 30*contentSize.height));
+        thisLayer.bodyFireV.p = cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y-10);
+        thisLayer.space.addBody(thisLayer.bodyFireV);
+		thisLayer.bodyFireV.applyForce(cp.v(1, 1), cp.v(1, 1));
+        thisLayer.shapeFireV = new cp.BoxShape(thisLayer.bodyFireV, contentSize.width /2, contentSize.height);
+		thisLayer.shapeFireV.setCollisionType(SpriteTag.fire);
+        thisLayer.space.addShape(thisLayer.shapeFireV);
+        thisLayer.spriteFireV.setBody(thisLayer.bodyFireV);
+		thisLayer.spriteFireV.setTag(thisLayer.shapeFireV.hashid);
+        thisLayer.spriteSheetChar.addChild(thisLayer.spriteFireV);	
+	    thisLayer.fire.push({sprite:thisLayer.spriteFireV,shape:thisLayer.shapeFireV});
+	}
+	
+	if(key==51){ //one fire 2
+	    thisLayer.spriteFire = new cc.PhysicsSprite("#fire01.png");
+        var contentSize = thisLayer.spriteFire.getContentSize();
+        thisLayer.bodyFire = new cp.Body(0.001, cp.momentForBox(1, 30*contentSize.width, 30*contentSize.height));
+        thisLayer.bodyFire.p = cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y+5);
+        thisLayer.space.addBody(thisLayer.bodyFire);
+		thisLayer.bodyFire.applyForce(cp.v(1, 0.35), cp.v(1, 0.35));
+        thisLayer.shapeFire = new cp.BoxShape(thisLayer.bodyFire, contentSize.width /2, contentSize.height);
+		thisLayer.shapeFire.setCollisionType(SpriteTag.fire); 
+        thisLayer.space.addShape(thisLayer.shapeFire);
+        thisLayer.spriteFire.setBody(thisLayer.bodyFire);
+		thisLayer.spriteFire.setTag(thisLayer.shapeFire.hashid);
+        thisLayer.spriteSheetChar.addChild(thisLayer.spriteFire);	
+	    thisLayer.fire.push({sprite:thisLayer.spriteFire,shape:thisLayer.shapeFire})
+	}
+	
+	if(key==52){ //double fire 2
+	    thisLayer.spriteFire = new cc.PhysicsSprite("#fire01.png");
+        var contentSize = thisLayer.spriteFire.getContentSize();
+        thisLayer.bodyFire = new cp.Body(0.001, cp.momentForBox(1, 30*contentSize.width, 30*contentSize.height));
+        thisLayer.bodyFire.p = cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y+5);
+        thisLayer.space.addBody(thisLayer.bodyFire);
+		thisLayer.bodyFire.applyForce(cp.v(1, 0.35), cp.v(1, 0.35));
+        thisLayer.shapeFire = new cp.BoxShape(thisLayer.bodyFire, contentSize.width /2, contentSize.height);
+		thisLayer.shapeFire.setCollisionType(SpriteTag.fire); 
+        thisLayer.space.addShape(thisLayer.shapeFire);
+        thisLayer.spriteFire.setBody(thisLayer.bodyFire);
+		thisLayer.spriteFire.setTag(thisLayer.shapeFire.hashid);
+        thisLayer.spriteSheetChar.addChild(thisLayer.spriteFire);	
+	    thisLayer.fire.push({sprite:thisLayer.spriteFire,shape:thisLayer.shapeFire})
+		
+		thisLayer.spriteFireV = new cc.PhysicsSprite("#fire01.png");
+        thisLayer.bodyFireV = new cp.Body(0.001, cp.momentForBox(1, 30*contentSize.width, 30*contentSize.height));
+        thisLayer.bodyFireV.p = cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y+5);
+        thisLayer.space.addBody(thisLayer.bodyFireV);
+		thisLayer.bodyFireV.applyForce(cp.v(1, 1), cp.v(1, 1));
+        thisLayer.shapeFireV = new cp.BoxShape(thisLayer.bodyFireV, contentSize.width /2, contentSize.height);
+		thisLayer.shapeFireV.setCollisionType(SpriteTag.fire);
+        thisLayer.space.addShape(thisLayer.shapeFireV);
+        thisLayer.spriteFireV.setBody(thisLayer.bodyFireV);
+		thisLayer.spriteFireV.setTag(thisLayer.shapeFireV.hashid);
+        thisLayer.spriteSheetChar.addChild(thisLayer.spriteFireV);	
+	    thisLayer.fire.push({sprite:thisLayer.spriteFireV,shape:thisLayer.shapeFireV});
+	}
+	
+	if(key==53){ //one fire 3
+	     if(!thisLayer.spriteDragonFire){
+			thisLayer.spriteDragonFire = new cc.PhysicsSprite("#dragon_fire00.png");
+			var contentSize = thisLayer.spriteDragonFire.getContentSize();
+			thisLayer.bodyDragonFire = new cp.Body(.00001, cp.momentForBox(1, 30*contentSize.width, 30*contentSize.height));
+			thisLayer.bodyDragonFire.p = cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y-10);
+			//thisLayer.space.addBody(thisLayer.bodyDragonFire);
+			thisLayer.spriteDragonFire.setTag('dragonFire');
+			thisLayer.shapeDragonFire = new cp.BoxShape(thisLayer.bodyDragonFire, contentSize.width, contentSize.height);
+			thisLayer.shapeDragonFire.setCollisionType(SpriteTag.rocket);
+			thisLayer.space.addShape(thisLayer.shapeDragonFire);
+			thisLayer.spriteDragonFire.setBody(thisLayer.bodyDragonFire);
+			thisLayer.spriteDragonFire.runAction(thisLayer.actionDragonFire);
+			thisLayer.spriteDragonFire.setTag(thisLayer.shapeDragonFire.hashid);
+			thisLayer.spriteSheetChar.addChild(thisLayer.spriteDragonFire);	
+			//thisLayer.dragonFire.push({sprite:thisLayer.spriteDragonFire,shape:thisLayer.shapeDragonFire});
+		}
+	}
+	
+	if(key==54){ //double fire 3
+	     if(!thisLayer.spriteDragonFire && !thisLayer.spriteDragonFireV){
+			thisLayer.spriteDragonFire = new cc.PhysicsSprite("#dragon_fire00.png");
+			var contentSize = thisLayer.spriteDragonFire.getContentSize();
+			thisLayer.bodyDragonFire = new cp.Body(.00001, cp.momentForBox(1, 30*contentSize.width, 30*contentSize.height));
+			thisLayer.bodyDragonFire.p = cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y-10);
+			//thisLayer.space.addBody(thisLayer.bodyDragonFire);
+			thisLayer.spriteDragonFire.setTag('dragonFire');
+			thisLayer.shapeDragonFire = new cp.BoxShape(thisLayer.bodyDragonFire, contentSize.width, contentSize.height);
+			thisLayer.shapeDragonFire.setCollisionType(SpriteTag.rocket);
+			thisLayer.space.addShape(thisLayer.shapeDragonFire);
+			thisLayer.spriteDragonFire.setBody(thisLayer.bodyDragonFire);
+			thisLayer.spriteDragonFire.runAction(thisLayer.actionDragonFire);
+			thisLayer.spriteDragonFire.setTag(thisLayer.shapeDragonFire.hashid);
+			thisLayer.spriteSheetChar.addChild(thisLayer.spriteDragonFire);	
+			//thisLayer.dragonFire.push({sprite:thisLayer.spriteDragonFire,shape:thisLayer.shapeDragonFire});
+			
+			thisLayer.spriteDragonFireV = new cc.PhysicsSprite("#dragon_fire00.png");
+			thisLayer.bodyDragonFireV = new cp.Body(.00001, cp.momentForBox(1, 30*contentSize.width, 30*contentSize.height));
+			//thisLayer.bodyDragonFireV.p = cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y-10);
+			//thisLayer.space.addBody(thisLayer.bodyDragonFireV);
+			debugger
+			thisLayer.spriteDragonFireV.setTag('dragonFire');
+			thisLayer.shapeDragonFireV = new cp.BoxShape(thisLayer.bodyDragonFireV, contentSize.width, contentSize.height);
+			thisLayer.shapeDragonFireV.setCollisionType(SpriteTag.rocket);
+			thisLayer.space.addShape(thisLayer.shapeDragonFireV);
+			thisLayer.spriteDragonFireV.setBody(thisLayer.bodyDragonFireV);
+			thisLayer.spriteDragonFireV.runAction(thisLayer.actionDragonFireV);
+			thisLayer.spriteDragonFireV.setTag(thisLayer.shapeDragonFireV.hashid);
+			thisLayer.spriteSheetChar.addChild(thisLayer.spriteDragonFireV);
+			//thisLayer.bodyDragonFireV.setPos({x:50,y:50})
+			//thisLayer.spriteDragonFireV.setAnchorPoint(cc.p(0, 0));
+			thisLayer.bodyDragonFireV.setAngle(45)
+			thisLayer.spriteDragonFireV.setRotation(-45);			
+			//thisLayer.dragonFire.push({sprite:thisLayer.spriteDragonFireV,shape:thisLayer.shapeDragonFireV});
+		}
+	}
+	
+	
+	
+	if(key==70){
+		//debugger; 
+		if(thisLayer.sprite.rockets>0){
+			thisLayer.spriteBullet8 = new cc.PhysicsSprite("#rocket00.png");
+				
+			var contentSize = thisLayer.spriteBullet8.getContentSize();
+			// init body
+			thisLayer.bodyBullet8 = new cp.Body(.35, cp.momentForBox(1, 30*contentSize.width, 30*contentSize.height));
+			thisLayer.bodyBullet8.p = cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y-10);
+			//this.bodyBullet8.applyImpulse(cp.v(220, 30), cp.v(0, 0));//run speed
+			thisLayer.space.addBody(thisLayer.bodyBullet8);
+			thisLayer.bodyBullet8.applyImpulse(cp.v(100, 100), cp.v(100, 0));
+			//init shape
+			//thisLayer.spriteBullet8.setTag(777);
+			
+			thisLayer.shapeBullet8 = new cp.BoxShape(thisLayer.bodyBullet8, contentSize.width /2, contentSize.height);
+			thisLayer.shapeBullet8.setCollisionType(SpriteTag.rocket);
+			thisLayer.space.addShape(thisLayer.shapeBullet8);
+			thisLayer.spriteBullet8.setBody(thisLayer.bodyBullet8);
+			thisLayer.spriteBullet8.runAction(thisLayer.flyingAction8);
+			thisLayer.spriteBullet8.setTag(thisLayer.shapeBullet8.hashid);
+	//this.spriteBullet6.body.setAngVel(0);
+			thisLayer.spriteSheetChar.addChild(thisLayer.spriteBullet8);	
+			thisLayer.rockets.push({sprite:thisLayer.spriteBullet8,shape:thisLayer.shapeBullet8});
+			thisLayer.sprite.rockets--;
+			//thisLayer.getParent().getParent().getChildByTag(TagOfLayer.Status).
+	    }
+	};
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	if(key==69){
+				
+				//debugger;
+				
+//PARTICLE ALL DEFAULT
+					/*	var l_pParticle = cc.ParticleSystem.create();
+						l_pParticle.initWithTotalParticles(33);//count of particles
+					                                          
+						l_pParticle.setPosition(cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y-10));
+						l_pParticle.setStartSize(20.0);// size of particles
+						l_pParticle.setEndSize(40.0);// size of particles
+						l_pParticle.setTexture(
+						    thisLayer.particleSrc.getTexture()
+						);
+						l_pParticle.setDuration(1);//set run seconds of the emitter
+						l_pParticle.setLife(3);//life of each particle setter
+						l_pParticle.setLifeVar(3);//life variance of each particle setter
+
+						//l_pParticle.setDuration(cc.PARTICLE_DURATION_INFINITY);
+						l_pParticle.setEmitterMode(cc.ParticleSystem.MODE_GRAVITY);//MODE_RADIUS
+						l_pParticle.setGravity(cc.p(100, -1111));
+						
+						// starting angle
+						 l_pParticle.setAngle(90);
+                         l_pParticle.setAngleVar(90);
+						
+							 // Gravity Mode: radial
+					l_pParticle.setRadialAccel(10);
+					l_pParticle.setRadialAccelVar(-11);
+
+						// Gravity Mode: tangential
+					   l_pParticle.setTangentialAccel(110);
+					 l_pParticle.setTangentialAccelVar(-111);
+						
+						
+						//color
+						l_pParticle.setStartColor(cc.color(204, 204, 204, 255));
+					  l_pParticle.setStartColorVar(cc.color(5, 5, 5, 0));
+						l_pParticle.setEndColor(cc.color(0, 0, 0, 255));
+					  l_pParticle.setEndColorVar(cc.color(0, 0, 0, 0));
+
+					
+						
+						// speed of particles
+						l_pParticle.setSpeed(100);//Speed of each particle setter
+						l_pParticle.setSpeedVar(20);//setSpeedVar
+						
+						
+						l_pParticle.setEmissionRate(3);//set emission rate of the particles
+						l_pParticle.setAutoRemoveOnFinish(true);//set whether or not the node will be auto-removed when it has no particles left.By default it is false.
+
+						thisLayer.addChild(l_pParticle,200);*/
+						
+						
+						
+//PARTICLE FIRE						
+				    /*   var l_pParticle = cc.ParticleFire.create();
+						l_pParticle.initWithTotalParticles(33);//count of particles
+					                                          
+						l_pParticle.setPosition(cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y-10));
+
+						l_pParticle.setTexture(
+						    thisLayer.particleSrc.getTexture()
+						);
+
+						l_pParticle.setAutoRemoveOnFinish(true);//set whether or not the node will be auto-removed when it has no particles left.By default it is false.
+
+						thisLayer.addChild(l_pParticle,200);*/		
+						
+
+						
+//PARTICLE ParticleFireworks						
+				   /*   var l_pParticle = cc.ParticleFireworks .create();
+						l_pParticle.initWithTotalParticles(33);//count of particles
+					                                          
+						l_pParticle.setPosition(cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y-10));
+
+						l_pParticle.setTexture(
+						    thisLayer.particleSrc.getTexture()
+						);
+
+						l_pParticle.setAutoRemoveOnFinish(true);//set whether or not the node will be auto-removed when it has no particles left.By default it is false.
+
+						thisLayer.addChild(l_pParticle,200);
+					*/	
+						
+						
+//PARTICLE ParticleSun 						
+				      /*var l_pParticle = cc.ParticleSun.create();
+						l_pParticle.initWithTotalParticles(33);//count of particles
+					                                          
+						l_pParticle.setPosition(cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y-10));
+
+						l_pParticle.setTexture(
+						    thisLayer.particleSrc.getTexture()
+						);
+
+						l_pParticle.setAutoRemoveOnFinish(true);//set whether or not the node will be auto-removed when it has no particles left.By default it is false.
+
+						thisLayer.addChild(l_pParticle,200);*/
+
+
+//PARTICLE ParticleGalaxy  						
+				     /* var l_pParticle = cc.ParticleGalaxy.create();
+						l_pParticle.initWithTotalParticles(33);//count of particles
+					                                          
+						l_pParticle.setPosition(cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y-10));
+
+						l_pParticle.setTexture(
+						    thisLayer.particleSrc.getTexture()
+						);
+
+						l_pParticle.setAutoRemoveOnFinish(true);//set whether or not the node will be auto-removed when it has no particles left.By default it is false.
+
+						thisLayer.addChild(l_pParticle,200);		
+*/
+
+
+//PARTICLE ParticleFlower  (rainbow) 						
+				      /*var l_pParticle = cc.ParticleFlower.create();
+						l_pParticle.initWithTotalParticles(33);//count of particles
+					                                          
+						l_pParticle.setPosition(cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y-10));
+
+						l_pParticle.setTexture(
+						    thisLayer.particleSrc.getTexture()
+						);
+
+						l_pParticle.setAutoRemoveOnFinish(true);//set whether or not the node will be auto-removed when it has no particles left.By default it is false.
+
+						thisLayer.addChild(l_pParticle,200);	*/
+
+
+//PARTICLE ParticleMeteor  						
+				      /*var l_pParticle = cc.ParticleMeteor.create();
+						l_pParticle.initWithTotalParticles(33);//count of particles
+					                                          
+						l_pParticle.setPosition(cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y-10));
+
+						l_pParticle.setTexture(
+						    thisLayer.particleSrc.getTexture()
+						);
+
+						l_pParticle.setAutoRemoveOnFinish(true);//set whether or not the node will be auto-removed when it has no particles left.By default it is false.
+
+						thisLayer.addChild(l_pParticle,200);	*/
+
+
+//PARTICLE ParticleSpiral   						
+				      var l_pParticle = cc.ParticleSpiral.create();
+						l_pParticle.initWithTotalParticles(33);//count of particles
+					                                          
+						l_pParticle.setPosition(cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y-10));
+
+						l_pParticle.setTexture(
+						    thisLayer.particleSrc.getTexture()
+						);
+                        
+						l_pParticle.setAutoRemoveOnFinish(true);//set whether or not the node will be auto-removed when it has no particles left.By default it is false.
+
+						thisLayer.addChild(l_pParticle,200);						
+						
+						
+//PARTICLE ParticleExplosion    						
+				     /* var l_pParticle = cc.ParticleExplosion.create();
+						l_pParticle.initWithTotalParticles(33);//count of particles
+					                                          
+						l_pParticle.setPosition(cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y-10));
+
+						l_pParticle.setTexture(
+						    thisLayer.particleSrc.getTexture()
+						);
+
+						l_pParticle.setAutoRemoveOnFinish(true);//set whether or not the node will be auto-removed when it has no particles left.By default it is false.
+
+						thisLayer.addChild(l_pParticle,200);	*/
+						
+						
+//PARTICLE ParticleSmoke     						
+				      /*var l_pParticle = cc.ParticleSmoke.create();
+						l_pParticle.initWithTotalParticles(33);//count of particles
+					                                          
+						l_pParticle.setPosition(cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y-10));
+
+						l_pParticle.setTexture(
+						    thisLayer.particleSrc.getTexture()
+						);
+
+						l_pParticle.setAutoRemoveOnFinish(true);//set whether or not the node will be auto-removed when it has no particles left.By default it is false.
+
+						thisLayer.addChild(l_pParticle,200);	
+						*/
+						
+						
+//PARTICLE ParticleSnow      						
+				    /*  var l_pParticle = cc.ParticleSnow.create();
+						l_pParticle.initWithTotalParticles(33);//count of particles
+					                                          
+						l_pParticle.setPosition(cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y-10));
+
+						l_pParticle.setTexture(
+						    thisLayer.particleSrc.getTexture()
+						);
+
+						l_pParticle.setAutoRemoveOnFinish(true);//set whether or not the node will be auto-removed when it has no particles left.By default it is false.
+
+						thisLayer.addChild(l_pParticle,200);*/	
+						
+						
+//PARTICLE ParticleRain       						
+				     /* var l_pParticle = cc.ParticleRain.create();
+						l_pParticle.initWithTotalParticles(33);//count of particles
+					                                          
+						l_pParticle.setPosition(cc.p(thisLayer.body.p.x + thisLayer.sprite.getBoundingBox().width - thisLayer.sprite.getBoundingBox().width/4, thisLayer.body.p.y-10));
+
+						l_pParticle.setTexture(
+						    thisLayer.particleSrc.getTexture()
+						);
+
+						l_pParticle.setAutoRemoveOnFinish(true);//set whether or not the node will be auto-removed when it has no particles left.By default it is false.
+
+						thisLayer.addChild(l_pParticle,200);	*/
+						
+					
+	}	
+		
+		
+		
+  
+		console.log(event);
+		console.log(key);
+		if(key==13){};
+		var impulsH=impulsV=0;
+		 if(key==39)impulsH=20;
+		 if(key==37)impulsH=0//-5;
+		  if(key==38)impulsV=110;
+		   if(key==40)impulsV=-110;
+		//this._node.bodyBullet.applyImpulse(cp.v(impulsH, impulsV), cp.v(0, 0));//run speed
+		this._node.body.applyImpulse(cp.v(impulsH, impulsV), cp.v(0, 0));//run <speed></speed>
+	//	this._node.bodyBullet1.applyImpulse(cp.v(impulsH, impulsV), cp.v(0, 0));//run speed
+		this._node.bodyBullet2.applyImpulse(cp.v(impulsH, impulsV), cp.v(0, 0));//run speed
+	//	this._node.bodyBullet3.applyImpulse(cp.v(impulsH, impulsV), cp.v(0, 0));//run speed
+		this._node.bodyBullet4.applyImpulse(cp.v(impulsH, impulsV), cp.v(0, 0));//run speed
+		this._node.bodyBullet5.applyImpulse(cp.v(impulsH, impulsV), cp.v(0, 0));//run speed
+	//	this._node.bodyBullet6.applyImpulse(cp.v(impulsH, impulsV), cp.v(0, 0));//run speed
+		this._node.bodyBullet7.applyImpulse(cp.v(impulsH, impulsV), cp.v(0, 0));//run speed
+	//	this._node.bodyBullet8.applyImpulse(cp.v(impulsH, impulsV), cp.v(0, 0));//run speed
+		this._node.bodyBullet9.applyImpulse(cp.v(impulsH, impulsV), cp.v(0, 0));//run speed
+	//	this._node.bodyBullet10.applyImpulse(cp.v(impulsH, impulsV), cp.v(0, 0));//run speed
+	//	this._node.bodyBullet11.applyImpulse(cp.v(impulsH, impulsV), cp.v(0, 0));//run speed
+	//	this._node.bodyBullet11.setAngle(0);
+	//	this._node.bodyBullet10.setAngle(0);
+		this._node.bodyBullet9.setAngle(0);
+	//	this._node.bodyBullet8.setAngle(0);
+		this._node.bodyBullet7.setAngle(0);
+	//	this._node.bodyBullet6.setAngle(0);
+		this._node.bodyBullet5.setAngle(0);
+		this._node.bodyBullet4.setAngle(0);
+	//	this._node.bodyBullet3.setAngle(0);
+		this._node.bodyBullet2.setAngle(0);
+	//	this._node.bodyBullet1.setAngle(0);
+		this._node.body.setAngle(0);
+
+	},
+	
+	locationTapped:function(location,event) {//debugger;
+       
+
+      //  this.spriteSheet.addChild(this.sprite);
+		
+		
+		 this._node.jump();
+		
+		
+		//if(!this._node.spriteSheet.getChildByTag(200))this._node.spriteSheet.addChild(this._node.projectile);
+		
+		
+		
+        // Bail out if you are shooting down or backwards
+        //if (offset.x <= 0) return;
+
+        // Ok to add now - we've double checked position
+		
+
+        // Figure out final destination of projectile
+      //  var realX = winSize.width + (projectile.getContentSize().width / 2);
+       // var ratio = offset.y / offset.x;
+       // var realY = (realX * ratio) + projectile.getPosition().y;
+       // var realDest = cc.p(realX, realY);
+//debugger;
+        // Determine the length of how far you're shooting
+       // var offset = cc.pSub(realDest, projectile.getPosition());
+       /* var length = cc.pLength(offset);
+        var velocity = 1480.0;
+        var realMoveDuration = length / velocity;
+
+        // Move projectile to actual endpoint
+        projectile.runAction(cc.Sequence.create(
+            cc.MoveTo.create(realMoveDuration, realDest),
+            cc.CallFunc.create(function(node) {
+                cc.ArrayRemoveObject(this._projectiles, node);
+                node.removeFromParent();
+            }, this)
+        ));
+*/
+        // Add to array
+      
+       // this._projectiles.push(projectile);
+
+        //audioEngine.playEffect(s_shootEffect);
+    },
+
+    onExit:function() {
+        //this.runningAction.release();
+	    //this.flyingAction.release();
+        //this.jumpUpAction.release();
+        //this.jumpDownAction.release();
+		
+
+        this._super();
+    },
+
+    initAction:function () {
+	
+	
+	this.particleSrc = new cc.Sprite(res.particle_star_png);//res.particle_png);
+	//debugger
+        // init runningAction
+		
+		
+        var animFrames = [];
+        // num equal to spriteSheet
+        for (var i = 0; i < 8; i++) {
+            var str = "runner" + i + ".png";
+            var frame = cc.spriteFrameCache.getSpriteFrame(str);
+            animFrames.push(frame);
+        }
+		//debugger;
+		
+
+        var animation = new cc.Animation(animFrames, 0.1);
+        this.runningAction = new cc.RepeatForever(new cc.Animate(animation));
+        this.runningAction.retain();
+
+        // init jumpUpAction
+        animFrames = [];
+        for (var i = 0; i < 4; i++) {
+            var str = "runnerJumpUp" + i + ".png";
+            var frame = cc.spriteFrameCache.getSpriteFrame(str);
+            animFrames.push(frame);
+        }
+
+        animation = new cc.Animation(animFrames, 0.2);
+        this.jumpUpAction = new cc.Animate(animation);
+        this.jumpUpAction.retain();
+
+        // init jumpDownAction
+        animFrames = [];
+        for (var i = 0; i < 2; i++) {
+            var str = "runnerJumpDown" + i + ".png";
+            var frame = cc.spriteFrameCache.getSpriteFrame(str);
+            animFrames.push(frame);
+        }
+
+        animation = new cc.Animation(animFrames, 0.3);
+        this.jumpDownAction = new cc.Animate(animation);
+        this.jumpDownAction.retain();
+		
+		
+		//debugger;
+		
+		/////////////////////////////
+		var animFrames1=[];
+		var animFrames3=[];
+		var animFrames4=[];
+		var animFrames5=[];
+		var animFrames6=[];
+		var animFrames7=[];
+		var animFrames8=[];
+		var animFrames9=[];
+		var animFrames10=[];
+		var animFrames11=[];
+		var animFrames2=[],
+		animFramesDragonFire = [];
+		
+
+        for (var i = 0; i < 8; i++) {
+            var str = "cristall0" + i + ".png";
+            var frame = cc.spriteFrameCache.getSpriteFrame(str);
+            animFrames2.push(frame);
+        }
+		 for (var i = 7; i >0; i--) {
+            var str = "cristall0" + i + ".png";
+            var frame = cc.spriteFrameCache.getSpriteFrame(str);
+            animFrames2.push(frame);
+        }
+		
+		 var animationChar2 = new cc.Animation(animFrames2, 0.1);
+        this.flyingAction2 = new cc.RepeatForever(new cc.Animate(animationChar2));
+        this.flyingAction2.retain();
+
+	for (var i = 0; i < 5; i++) {
+            var str = "green0" + i + ".png";
+            var frame = cc.spriteFrameCache.getSpriteFrame(str);
+            animFrames3.push(frame);
+        }
+		var animFrames3 = animFrames3.concat(animFrames3.reverse());
+
+		
+		 var animationChar3 = new cc.Animation(animFrames3, 0.1);
+        this.flyingAction3 = new cc.RepeatForever(new cc.Animate(animationChar3));
+        this.flyingAction3.retain();
+		
+		
+
+         for (var i = 0; i < 5; i++) {
+            var str = "chick0" + i + ".png";
+            var frame = cc.spriteFrameCache.getSpriteFrame(str);
+            animFrames4.push(frame);
+        }
+		var animFrames4 = animFrames4.concat(animFrames4.reverse());
+	var animationChar4 = new cc.Animation(animFrames4, 0.1);
+        this.flyingAction4 = new cc.RepeatForever(new cc.Animate(animationChar4));
+        this.flyingAction4.retain();
+	
+
+
+         for (var i = 0; i < 5; i++) {
+            var str = "eagle0" + i + ".png";
+            var frame = cc.spriteFrameCache.getSpriteFrame(str);
+            animFrames5.push(frame);
+        }
+		var animFrames5 = animFrames5.concat(animFrames5.reverse());
+			
+ var animationChar5 = new cc.Animation(animFrames5, 0.1);
+        this.flyingAction5 = new cc.RepeatForever(new cc.Animate(animationChar5));
+        this.flyingAction5.retain();
+
+         for (var i = 0; i < 3; i++) {
+            var str = "robo0" + i + ".png";
+            var frame = cc.spriteFrameCache.getSpriteFrame(str);
+            animFrames6.push(frame);
+        }
+		var animFrames6 = animFrames6.concat(animFrames6.reverse());
+	 var animationChar6 = new cc.Animation(animFrames6, 0.1);
+        this.flyingAction6 = new cc.RepeatForever(new cc.Animate(animationChar6));
+        this.flyingAction6.retain();	
+		
+		
+		
+		for (var i = 0; i < 6; i++) {
+            var str = "hat0" + i + ".png";
+            var frame = cc.spriteFrameCache.getSpriteFrame(str);
+            animFrames7.push(frame);
+        }
+		var animFrames7 = animFrames7.concat(animFrames7.reverse());
+	 var animationChar7 = new cc.Animation(animFrames7, 0.1);
+        this.flyingAction7 = new cc.RepeatForever(new cc.Animate(animationChar7));
+        this.flyingAction7.retain();	
+		
+		
+		
+		for (var i = 0; i < 8; i++) {
+            var str = "dragon_fire0" + i + ".png";
+            var frame = cc.spriteFrameCache.getSpriteFrame(str);
+            animFramesDragonFire.push(frame);
+        }
+		
+		var animFramesTmp = animFramesDragonFire.slice();
+		var animFramesR = animFramesTmp.reverse();
+        var animationDragonFireV = new cc.Animation(animFramesR, 0.1);
+        this.actionDragonFireV = new cc.RepeatForever(new cc.Animate(animationDragonFireV));
+        this.actionDragonFireV.retain();
+		
+		
+	    var animationDragonFire = new cc.Animation(animFramesDragonFire, 0.1);
+        this.actionDragonFire = new cc.RepeatForever(new cc.Animate(animationDragonFire));
+        this.actionDragonFire.retain();
+		
+		
+		for (var i = 0; i < 3; i++) {
+            var str = "rocket0" + i + ".png";
+            var frame = cc.spriteFrameCache.getSpriteFrame(str);
+            animFrames8.push(frame);
+        }
+		var animFrames8 = animFrames8.concat(animFrames8.reverse());
+	 var animationChar8 = new cc.Animation(animFrames8, 0.1);
+        this.flyingAction8 = new cc.RepeatForever(new cc.Animate(animationChar8));
+        this.flyingAction8.retain();
+
+
+      for (var i = 0; i < 6; i++) {
+            var str = "pink0" + i + ".png";
+            var frame = cc.spriteFrameCache.getSpriteFrame(str);
+            animFrames9.push(frame);
+        }
+		var animFrames9 = animFrames9.concat(animFrames9.reverse());
+	 var animationChar9 = new cc.Animation(animFrames9, 0.1);
+        this.flyingAction9 = new cc.RepeatForever(new cc.Animate(animationChar9));
+        this.flyingAction9.retain();	
+
+
+     for (var i = 0; i < 8; i++) {
+            var str = "dragon0" + i + ".png";
+            var frame = cc.spriteFrameCache.getSpriteFrame(str);
+            animFrames10.push(frame);
+        }
+		var animFrames10 = animFrames10.concat(animFrames10.reverse());
+	 var animationChar10 = new cc.Animation(animFrames10, 0.1);
+        this.flyingAction10 = new cc.RepeatForever(new cc.Animate(animationChar10));
+        this.flyingAction10.retain();		
+
+
+ for (var i = 0; i < 7; i++) {
+            var str = "exsplosion0" + i + ".png";
+            var frame = cc.spriteFrameCache.getSpriteFrame(str);
+            animFrames11.push(frame);
+        }//debugger
+		var animFrames11 = animFrames11.concat(animFrames11.reverse());
+	    var animationChar11 = new cc.Animation(animFrames11, 0.1);
+        this.flyingAction11 = new cc.Repeat(new cc.Animate(animationChar11),1);
+        this.flyingAction11.retain();				
+		
+		
+		/////////////////////////////
+		
+	/*	var animFramesChar=[];
+			  for (var i = 0; i < 5; i++) {
+            var strChar = "bomb0" + i + ".png";
+            var frameChar = cc.spriteFrameCache.getSpriteFrame(strChar);
+            animFramesChar.push(frameChar);
+        }
+		
+
+		var animFramesTmp = animFramesChar.slice();
+		var animFramesR = animFramesTmp.concat(animFramesChar.reverse());
+		
+        var animationChar = new cc.Animation(animFramesR, 0.1);
+        this.flyingAction = new cc.RepeatForever(new cc.Animate(animationChar));
+        this.flyingAction.retain();
+		
+		*/
+    },
+
+    onTouchBegan:function(touch, event) {
+        var pos = touch.getLocation();
+        event.getCurrentTarget().recognizer.beginPoint(pos.x, pos.y);
+        return true;
+    },
+
+    onTouchMoved:function(touch, event) {
+        var pos = touch.getLocation();
+        event.getCurrentTarget().recognizer.movePoint(pos.x, pos.y);
+    },
+
+    onTouchEnded:function(touch, event) {
+        var rtn = event.getCurrentTarget().recognizer.endPoint();
+        cc.log("rnt = " + rtn);
+        switch (rtn) {
+            case "up":
+                event.getCurrentTarget().jump();
+                break;
+            default:
+                break;
+        }
+    },
+
+    jump:function () {
+        cc.log("jump");
+        if (this.stat == RunnerStat.running && this.sprite.stamina>0) {
+            this.body.applyImpulse(cp.v(0, 250), cp.v(0, 0));
+            //this.stat = RunnerStat.jumpUp;
+            //this.sprite.stopAllActions();
+            //this.sprite.runAction(this.jumpUpAction);
+
+            cc.audioEngine.playEffect(res.jump_mp3);
+			
+			var statusLayer = this.getParent().getParent().getChildByTag(TagOfLayer.Status);
+			//debugger
+			this.sprite.stamina -= .25; 
+			var percent = this.sprite.stamina;
+			var def_width = 66;
+			statusLayer.stamina_bar.setScaleX(percent);
+			var curr_width = statusLayer.stamina_bar.getBoundingBox().width;
+			statusLayer.stamina_bar.setPosition(cc.p(statusLayer.stamina_bar.getPositionX()-def_width/2*(percent+.25)+curr_width/2,statusLayer.stamina_bar.getPositionY()));
+			this.backupStamina();
+
+        }
+    },
+	
+	 backupStamina:function () {
+	 //setTimeout(function(){cc.log(this);alert()}.bind(this),1000);
+	 
+			setTimeout(function(){
+				if (this.stat == RunnerStat.running && this.sprite.stamina>=0) {
+					var statusLayer = this.getParent().getParent().getChildByTag(TagOfLayer.Status);
+					//debugger
+					this.sprite.stamina += .25; 
+					var percent = this.sprite.stamina;
+					var def_width = 66;
+					statusLayer.stamina_bar.setScaleX(percent);
+					var curr_width = statusLayer.stamina_bar.getBoundingBox().width;
+					statusLayer.stamina_bar.setPosition(cc.p(statusLayer.stamina_bar.getPositionX()+def_width/2*(percent+.25)-curr_width/2,statusLayer.stamina_bar.getPositionY()));
+				}
+			}.bind(this),3000);
+        
+    },
+	
+	  onMouseUp:function (event) {
+			console.log(111)
+    },
+
+    getEyeX:function () {
+        return this.sprite.getPositionX() - g_runnerStartX;
+    },
+   explosiveRemove:function (bullet) {
+	      bullet.removeFromParent();
+      	 bullet = null;					
+	},
+	removeRocketsByShape:function (shape) {//debugger;
+        for (var i = 0; i < this.rockets.length; i++) {
+            if (this.rockets[i].sprite.tag == shape.hashid) {
+                
+				
+				
+				   shape.space.removeBody(shape.getBody());//    1----shape
+				   shape.space.removeShape(shape);//                  2----body
+				  
+				   
+				   this.rockets[i].sprite.removeFromParent();//         3----sprite
+				   this.rockets[i] = null;
+                this.rockets.splice(i, 1);
+                break;
+            }
+        }
+    },
+	removeFireByShape:function (shape) {//debugger;
+        for (var i = 0; i < this.fire.length; i++) {
+            if (this.fire[i].sprite.tag == shape.hashid) {
+                
+				
+				
+				   shape.space.removeBody(shape.getBody());//    1----shape
+				   shape.space.removeShape(shape);//                  2----body
+				  
+				   
+				   this.fire[i].sprite.removeFromParent();//         3----sprite
+				   this.fire[i] = null;
+                this.fire.splice(i, 1);
+                break;
+            }
+        }
+    },
+    update:function (dt) {
+
+	//var wallLeft = cc.Director._getInstance().getRunningScene().wallLeft;
+	/*this.wallBody.setPos(cc.p(100,0))*/
+	//debugger
+		//if(this.projectile.getPosition().y>this.height-this.projectile.height/2)console.log(this.projectile.getPosition());
+        // update meter
+		//
+      
+		
+			/*if(this.sprite && this.spriteBullet1){
+			    
+				 var player = this.sprite.getBoundingBox();
+			     var charBig = this.spriteBullet1.getBoundingBox();
+				   if (cc.rectIntersectsRect(player, charBig)) {
+
+				   cc.log("player die!");
+				  // debugger;
+				    var collis_pos = {x:player.x, y:player.y};
+						 
+						 //////////////////////////////
+						 this.sprite11 = new cc.Sprite("#exsplosion00.png");
+						 var contentSize11 = this.sprite11.getContentSize();
+						   
+						this.sprite11.attr({
+							x: contentSize11.width,
+							y: contentSize11.height
+						});
+						this.sprite11.setPosition( cc.p(collis_pos.x+contentSize11.height, collis_pos.y+contentSize11.height/2));
+						this.sprite11.runAction(//
+							cc.sequence(
+								//cc.scaleTo(.2, 10, 10),
+								this.flyingAction11,
+								cc.FadeOut.create(.2)
+							)
+						);
+						
+						this.addChild(this.sprite11, 0);
+						 
+						var blink  = new cc.Repeat(
+							cc.sequence(
+							     cc.FadeOut.create(.2),
+								cc.FadeIn.create(.2)
+							),5
+						);
+						
+						this.sprite.runAction(blink);
+						
+					
+						   this.space.removeBody( this.bodyBullet1);
+						   this.space.removeShape(this.shapeBullet1);
+						   this.spriteBullet1.removeFromParent();
+						   this.spriteBullet1 = null;
+				   
+				   }
+				 
+				
+			}
+		
+		if(this.spriteBullet8 && this.spriteBullet1){
+			 var rocket = this.spriteBullet8.getBoundingBox();
+			 var charBig = this.spriteBullet1.getBoundingBox();
+			  if (cc.rectIntersectsRect(rocket, charBig)) {
+				  cc.log("enemy destroy!");
+					//	 debugger;
+						 var collis_pos = {x:rocket.x, y:rocket.y};
+						 
+						 //////////////////////////////
+						 this.sprite11 = new cc.Sprite("#exsplosion00.png");
+						 var contentSize11 = this.sprite11.getContentSize();
+						   
+						this.sprite11.attr({
+							x: contentSize11.width,
+							y: contentSize11.height
+						});
+						this.sprite11.setPosition( cc.p(collis_pos.x+contentSize11.height, collis_pos.y+contentSize11.height/2));
+						this.sprite11.runAction(//
+							cc.sequence(
+								//cc.scaleTo(.2, 10, 10),
+								this.flyingAction11,
+								cc.FadeOut.create(.2)
+							)
+						);
+						
+						this.addChild(this.sprite11, 0);
+
+		
+		//var spriteAction_ = new cc.EaseBounceOut( new cc.MoveBy(2, cc.p(500,0)));
+				 
+			/*	this.spriteBullet11 = new cc.PhysicsSprite("#exsplosion00.png");
+				
+				var contentSize = this.spriteBullet11.getContentSize();
+				// init body
+				this.bodyBullet11 = new cp.Body(3, cp.momentForBox(1, contentSize.width, contentSize.height));
+				this.bodyBullet11.p = cc.p(collis_pos.x+contentSize.height, collis_pos.y+contentSize.height/2);
+				//this.bodyBullet10.applyImpulse(cp.v(220, 30), cp.v(0, 0));//run speed
+				this.space.addBody(this.bodyBullet11);
+				// this.bodyBullet10.applyForce(cp.v(220, 30), cp.v(220, 30));
+				//init shape
+				this.Bullet11 = new cp.BoxShape(this.bodyBullet11, contentSize.width - 14, contentSize.height);
+				this.space.addShape(this.Bullet11);
+				this.spriteBullet11.setBody(this.bodyBullet11);
+				this.spriteBullet11.runAction(this.flyingAction11);
+		//this.spriteBullet6.body.setAngVel(0);
+				this.spriteSheetChar.addChild(this.spriteBullet11);	
+				var that = this;
+				/*setTimeout(function(that){
+		           that.spriteBullet11.removeFromParent();
+      			   that.spriteBullet11 = null;					
+				   that.space.removeBody( that.bodyBullet11);
+				}(that),1000)
+				 //////////////////////////////
+				 
+				 
+				   this.spriteBullet8.removeFromParent();
+				   this.space.removeBody( this.bodyBullet8);
+				   this.space.removeShape(this.shapeBullet8);
+				   this.spriteBullet8 = null;					
+				   
+				   this.space.removeBody( this.bodyBullet1);
+				   this.space.removeShape(this.shapeBullet1);
+				   this.spriteBullet1.removeFromParent();
+				   this.spriteBullet1 = null;
+				  
+			  }
+		  }
+		/*for (var i = 0; i < this._projectiles.length; i++) {
+            var projectile = this._projectiles[i];
+            for (var j = 0; j < this._monsters.length; j++) {
+                var monster = this._monsters[j];
+                var projectileRect = projectile.getBoundingBox();
+                var monsterRect = monster.getBoundingBox();
+                if (cc.rectIntersectsRect(projectileRect, monsterRect)) {
+                    cc.log("collision!");
+				
+                    
+					cc.ArrayRemoveObject(this._projectiles, projectile);
+                    projectile.removeFromParent();
+                    cc.ArrayRemoveObject(this._monsters, monster);
+                    monster.removeFromParent();
+					audioEngine.playEffect(s_shootEffect);
+                    _monstersDestroyed++;
+                    if (_monstersDestroyed >= 10) {
+                        var scene = GameOver.scene(true);
+                        cc.Director.getInstance().pushScene(scene);
+                    }
+                }
+            }
+        }
+		
+		
+		for (var i = 0; i < this.rockets.length; i++) {
+            if (this.rockets[i].sprite.getPosition().y<=g_groundHeight+this.rockets[i].sprite.getBoundingBox().height/2) {
+               
+				cc.log('rocket down!')
+				 
+						var l_pParticle = cc.ParticleExplosion.create();
+						l_pParticle.initWithTotalParticles(10);//count of particles
+					    l_pParticle.setStartSize(2.0);// size of particles
+						l_pParticle.setEndSize(20.0);// size of particles
+						l_pParticle.setDuration(.2);//set run seconds of the emitter
+						l_pParticle.setLife(.5);//life of each particle setter
+						l_pParticle.setLifeVar(.5);//life variance of each particle setter                                          
+						l_pParticle.setPosition(this.rockets[i].sprite.getPosition());
+
+						l_pParticle.setTexture(
+						    this.particleSrc.getTexture()
+						);
+
+						l_pParticle.setAutoRemoveOnFinish(true);//set whether or not the node will be auto-removed when it has no particles left.By default it is false.
+
+						this.addChild(l_pParticle,200);	
+				   //this.space.removeShape(this.rockets[i]._body.shapeList);
+				 
+				   this.rockets[i].sprite.removeFromParent();
+				   this.space.removeBody(this.rockets[i].sprite._body);
+				   this.space.removeShape(this.rockets[i].shape);
+				   this.rockets[i] = null;
+				   
+                this.rockets.splice(i, 1);
+                break;
+            }
+        }*/
+		
+		
+		for (var i = 0; i < this.fire.length; i++) {
+            if (this.fire[i].sprite.getPosition().y<=g_groundHeight+this.fire[i].sprite.getBoundingBox().height/2) {
+                //debugger
+				cc.log('rocket down!')
+				
+				/*var l_pParticleF = cc.ParticleFire.create();
+						l_pParticleF.initWithTotalParticles(33);//count of particles
+					                                          
+						l_pParticleF.setPosition(cc.p(this.body.p.x + this.sprite.getBoundingBox().width - this.sprite.getBoundingBox().width/4, this.body.p.y-10));
+
+						l_pParticleF.setTexture(
+						    this.particleSrc.getTexture()
+						);
+
+						l_pParticleF.setAutoRemoveOnFinish(true);//set whether or not the node will be auto-removed when it has no particles left.By default it is false.
+
+						this.addChild(l_pParticleF,200);
+				*/
+				
+				 
+						var l_pParticle = cc.ParticleExplosion.create();
+						l_pParticle.initWithTotalParticles(10);//count of particles
+					    l_pParticle.setStartSize(2.0);// size of particles
+						l_pParticle.setEndSize(20.0);// size of particles
+						l_pParticle.setDuration(.2);//set run seconds of the emitter
+						l_pParticle.setLife(.5);//life of each particle setter
+						l_pParticle.setLifeVar(.5);//life variance of each particle setter                                          
+						l_pParticle.setPosition(this.fire[i].sprite.getPosition());
+
+						l_pParticle.setTexture(
+						    this.particleSrc.getTexture()
+						);
+
+						l_pParticle.setAutoRemoveOnFinish(true);//set whether or not the node will be auto-removed when it has no particles left.By default it is false.
+
+						this.addChild(l_pParticle,200);	
+				   //this.space.removeShape(this.fire[i]._body.shapeList);
+				 
+				   this.fire[i].sprite.removeFromParent();
+				   this.space.removeBody(this.fire[i].sprite._body);
+				   this.space.removeShape(this.fire[i].shape);
+				   this.fire[i] = null;
+				   
+                this.fire.splice(i, 1);
+                break;
+            }
+        }
+		
+        var statusLayer = this.getParent().getParent().getChildByTag(TagOfLayer.Status);
+		var setToMeter = {position: this.sprite.getPositionX() - g_runnerStartX, lives:this.sprite.lives, rockets:this.sprite.rockets, fire_status:this.sprite.fire_status}
+		
+        statusLayer.updateMeter(setToMeter);
+        // check and update runner stat
+        var vel = this.body.getVel();
+		if(vel.x<0){
+			vel.x = 0;
+			//console.log(this.getEyeX());
+		}
+		
+		var objArr = this.getParent().getChildByTag(TagOfLayer.background).objects;
+		
+		var lenBodys = objArr[0].space.bodies.length;
+		var alllenBodys = objArr[0].space.bodies;
+		for (var z = 0; z < lenBodys; z++) {
+		//debugger
+		  
+		   if(objArr[z]&& objArr[z].shape && objArr[z].shape.collision_type==SpriteTag.chick_child){//get only chick_child
+		       if(this.sprite.getPositionX()+150>this.getParent().getChildByTag(TagOfLayer.background).spriteSheetcharBig_plist.getChildByTag(objArr[z].shape.hashid).getPositionX()){
+					//debugger
+					
+                   var chick_child = this.getParent().getChildByTag(TagOfLayer.background).spriteSheetcharBig_plist.getChildByTag(objArr[z].shape.hashid);
+				   var zombyChild_y =  g_groundHeight+25;
+				   
+				chick_child.setPosition(cc.p(chick_child.getPositionX()-1.5, zombyChild_y));		
+				if(!this.chick_childChildAction){	  
+				chick_child.stopAllActions();	
+				var animFrames = [];
+				 for (var i = 2; i < 4; i++) {
+					var str = "child0" + i + ".png";
+					var frame = cc.spriteFrameCache.getSpriteFrame(str);
+					animFrames.push(frame);
+				}
+	
+				var animation = new cc.Animation(animFrames, 0.2);
+				 this.chick_childChildAction  = new cc.RepeatForever( new cc.Animate(animation));
+									   
+					chick_child.runAction(
+								cc.sequence(
+									cc.scaleTo(.2, 1.2, 1.1)
+									//cc.moveBy(.2, cc.p(0, 140))
+									//this.chick_childChildAction//,
+								    //cc.tintTo(1,155,55,55)
+									//cc.FadeOut.create(.2)
+								)
+								);
+				   chick_child.runAction(
+								//cc.sequence(
+									//cc.scaleTo(.2, 2, 2),
+									this.chick_childChildAction//,
+								    //cc.tintTo(1,255,55,55)
+									//cc.FadeOut.create(.2)
+								//)
+								);
+				}
+				}
+		   }
+		   
+		   if(objArr[z]&& objArr[z].shape && objArr[z].shape.collision_type==SpriteTag.bomber){//get only chick_child
+		       //if(this.sprite.getPositionX()+150>this.getParent().getChildByTag(TagOfLayer.background).spriteSheetcharBig_plist.getChildByTag(objArr[z].shape.hashid).getPositionX()){
+				//debugger	
+					
+                   var bomber = this.getParent().getChildByTag(TagOfLayer.background).spriteSheetcharBig_plist.getChildByTag(objArr[z].shape.hashid);
+				   
+				   
+				bomber.setPosition(cc.p(bomber.getPositionX()-1, bomber.getPositionY()));		
+				if(!this.bomberChildAction){	  
+				//bomber.stopAllActions();	
+				 this.bomberChildAction  = new cc.RepeatForever( new cc.Animate(animation));
+									   
+					bomber.runAction(
+								cc.sequence(
+									cc.scaleTo(.2, 1.2, 1.1)
+									//cc.moveBy(.2, cc.p(0, 140))
+									//this.bomberChildAction//,
+								    //cc.tintTo(1,155,55,55)
+									//cc.FadeOut.create(.2)
+								)
+								);
+				}
+				//}
+				if(bomber.getPositionX()%20 == 0){
+					//debugger;
+						this.spriteEgg = new cc.PhysicsSprite("#egg.png");
+							
+							var contentSize = this.spriteEgg.getContentSize();
+							// init body
+							this.bodyEgg = new cp.Body(3, cp.momentForBox(1, 30*contentSize.width, 30*contentSize.height));
+							this.bodyEgg.p = cc.p(bomber.getPositionX()+10, bomber.getPositionY()-10);
+							//this.bodyEgg.applyImpulse(cp.v(220, 30), cp.v(0, 0));//run speed
+							this.space.addBody(this.bodyEgg);
+							this.bodyEgg.applyForce(cp.v(-10, 0), cp.v(-10, 0));
+							//init shape
+							//this.spriteEgg.setTag(777);
+							
+							this.shapeEgg = new cp.BoxShape(this.bodyEgg, contentSize.width /2, contentSize.height);
+							this.shapeEgg.setCollisionType(SpriteTag.bombers_bomb);
+							this.space.addShape(this.shapeEgg);
+							this.spriteEgg.setBody(this.bodyEgg);
+							
+							//this.spriteEgg.runAction(this.flyingAction8);
+							this.spriteEgg.setTag(this.shapeEgg.hashid);
+					//this.spriteBullet6.body.setAngVel(0);
+							this.spriteSheetChar.addChild(this.spriteEgg);	
+							this.rockets.push({sprite:this.spriteEgg,shape:this.shapeEgg})
+				}
+		   }
+		   
+		   
+		   	if(objArr[z]&& objArr[z].shape && objArr[z].shape.collision_type==SpriteTag.ball){//get only chick_child
+		      var ball = this.getParent().getChildByTag(TagOfLayer.background).spriteSheetcharBig_plist.getChildByTag(objArr[z].shape.hashid);
+				   
+				var ballWidth = ball.getBoundingBox().width;   
+				ball.setPosition(cc.p(ball.getPositionX()-1, ball.getPositionY()));		
+				if(!this.ballChildAction){	  
+				//bomber.stopAllActions();	
+				 this.ballChildAction  = new cc.RepeatForever( new cc.Animate(animation));
+									   
+					ball.runAction(
+								cc.sequence(
+									cc.scaleTo(.2, 1.2, 1.1)
+									//cc.moveBy(.2, cc.p(0, 140))
+									//this.bomberChildAction//,
+								    //cc.tintTo(1,155,55,55)
+									//cc.FadeOut.create(.2)
+								)
+								);
+				}
+				//}
+				if(ball.getPositionX()%30 == 0){
+					//debugger;
+						this.spriteSpit = new cc.PhysicsSprite("#spit.png");
+							
+							var contentSize = this.spriteSpit.getContentSize();
+							// init body
+
+							this.bodySpit = new cp.Body(0.001, cp.momentForBox(1, 30*contentSize.width, 30*contentSize.height));
+							this.bodySpit.p = cc.p(ball.getPositionX()-ballWidth/2, ball.getPositionY());
+							//this.bodyEgg.applyImpulse(cp.v(220, 30), cp.v(0, 0));//run speed
+							this.space.addBody(this.bodySpit);
+							this.bodySpit.applyForce(cp.v(-1, 0.35), cp.v(-1, 0.35));
+							//init shape
+							//this.spriteEgg.setTag(777);
+							
+							this.shapeSpit = new cp.BoxShape(this.bodySpit, contentSize.width /2, contentSize.height);
+							this.shapeSpit.setCollisionType(SpriteTag.balls_bomb);
+							this.space.addShape(this.shapeSpit);
+							this.spriteSpit.setBody(this.bodySpit);
+							
+							//this.spriteEgg.runAction(this.flyingAction8);
+							this.spriteSpit.setTag(this.shapeSpit.hashid);
+					//this.spriteBullet6.body.setAngVel(0);
+							this.spriteSheetChar.addChild(this.spriteSpit);	
+							this.rockets.push({sprite:this.spriteSpit,shape:this.shapeSpit})
+				}
+		   }
+	
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		   	if(objArr[z]&& objArr[z].shape && objArr[z].shape.collision_type==SpriteTag.lazer){//get only lazer
+		      var lazer = this.getParent().getChildByTag(TagOfLayer.background).spriteSheetcharBig_plist.getChildByTag(objArr[z].shape.hashid);
+				 debugger  
+				var lazerWidth = lazer.getBoundingBox().width;   
+				lazer.setPosition(cc.p(lazer.getPositionX()-1, lazer.getPositionY()));		
+				//if(!this.lazerChildAction){	  
+				//bomber.stopAllActions();	
+				 /*this.lazerChildAction  = new cc.RepeatForever( new cc.Animate(animation));
+									   
+					lazer.runAction(
+								cc.sequence(
+									cc.scaleTo(.2, 1.2, 1.1)
+									//cc.moveBy(.2, cc.p(0, 140))
+									//this.bomberChildAction//,
+								    //cc.tintTo(1,155,55,55)
+									//cc.FadeOut.create(.2)
+								)
+								);
+					*/
+				//}
+				//}
+				if(lazer.getPositionX()%30 == 0){
+					//debugger;
+						this.spriteLazerFire = new cc.PhysicsSprite("#lazerFire.png");
+							
+							var contentSize = this.spriteLazerFire.getContentSize();
+							// init body
+
+							this.bodyLazerFire = new cp.Body(0.001, cp.momentForBox(1, 30*contentSize.width, 30*contentSize.height));
+							this.bodyLazerFire.p = cc.p(lazer.getPositionX()-lazerWidth/2, lazer.getPositionY()+5);
+							
+							var l_pParticle = cc.ParticleExplosion.create();
+							l_pParticle.initWithTotalParticles(33);//count of particles
+																		  
+							l_pParticle.setPosition(cc.p(lazer.getPositionX()-15,lazer.getPositionY()+5));
+							l_pParticle.setStartSize(10.0);// size of particles
+							l_pParticle.setEndSize(0.0);// size of particles
+							l_pParticle.setTexture(
+								this.particleSrc.getTexture()
+							);
+													// speed of particles
+						l_pParticle.setSpeed(50);//Speed of each particle setter
+						l_pParticle.setSpeedVar(50);//setSpeedVar
+						l_pParticle.setDuration(.5);//set run seconds of the emitter
+						l_pParticle.setLife(.5);//life of each particle setter
+						l_pParticle.setLifeVar(.5);//life variance of each particle setter
+							
+							l_pParticle.setStartColor(cc.color(254,195,15, 255));
+							l_pParticle.setStartColorVar(cc.color(5, 5, 5, 0));
+							l_pParticle.setEndColor(cc.color(255, 255, 255, 0));
+							l_pParticle.setEndColorVar(cc.color(0, 0, 0, 0));
+
+							
+							l_pParticle.setAutoRemoveOnFinish(true);//set whether or not the node will be auto-removed when it has no particles left.By default it is false.
+
+							this.addChild(l_pParticle,0);
+							
+							
+							//this.bodyEgg.applyImpulse(cp.v(220, 30), cp.v(0, 0));//run speed
+							this.space.addBody(this.bodyLazerFire);
+							this.bodyLazerFire.applyForce(cp.v(-1, 0.35), cp.v(-1, 0.35));
+							//init shape
+							//this.spriteEgg.setTag(777);
+							
+							this.shapeLazerFire = new cp.BoxShape(this.bodyLazerFire, contentSize.width /2, contentSize.height);
+							this.shapeLazerFire.setCollisionType(SpriteTag.lazerFire);
+							this.space.addShape(this.shapeLazerFire);
+							this.spriteLazerFire.setBody(this.bodyLazerFire);
+							
+							//this.spriteEgg.runAction(this.flyingAction8);
+							this.spriteLazerFire.setTag(this.shapeLazerFire.hashid);
+					//this.spriteBullet6.body.setAngVel(0);
+							this.spriteSheetChar.addChild(this.spriteLazerFire);	
+							this.rockets.push({sprite:this.spriteLazerFire,shape:this.shapeLazerFire})
+				}
+		   }	
+  //////////////////////////////////////////////////////////////////          
+        }
+		
+	
+	    if(this.sprite && this.sprite.getPositionY()<0 ){
+		   
+			for (var r = 0; r < objArr.length; r++) {
+			    if(objArr[r] && objArr[r].name=='ground'){
+					if(objArr[r].shape.bb_l>this.sprite.getPositionX()){
+						this.sprite.setPositionY(objArr[r].shape.bb_t+this.sprite.getBoundingBox().height);
+						
+						this.sprite.setPositionX(objArr[r].shape.bb_l);
+						/////////////////////
+													
+													var blink  = new cc.Repeat(
+														cc.sequence(
+															 cc.FadeOut.create(.2),
+															cc.FadeIn.create(.2)
+														),5
+													);
+
+
+														this.sprite.lives--;
+
+														 this.sprite.rockets=5;
+													   this.sprite.runAction(
+															 cc.sequence(
+																blink
+															)
+														);
+													
+													
+										
+										if(this.sprite.lives==-1){
+											////////////////////////////////
+												
+
+												 cc.log("==game over");
+
+												//stop bg music
+												cc.audioEngine.stopMusic();
+
+												cc.director.pause();
+												this.addChild(new GameOverLayer());
+										}
+						/////////////////////
+						break;				
+					}			
+			    }
+		    }
+		   
+		   
+		   }
+	
+		for (var r = 0; r < objArr.length; r++) {
+		 if(objArr[r] && objArr[r].name=='child' && objArr[r].sprite && objArr[r].sprite.getPositionY()<0 ){
+		   cc.log(objArr[r].sprite.getPositionY() )
+		   cc.log(objArr[r].sprite )
+		    cc.log(objArr[r])
+			objArr[r].removeFromParent()
+		   }
+		   
+		}
+		//debugger
+		
+		if(this.spriteEgg){
+		   this.spriteEgg.setRotation(this.spriteEgg.getRotation()+5);
+		}
+		
+		if(this.spriteSpit){
+		   this.spriteSpit.setRotation(this.spriteSpit.getRotation()+5);
+		}
+		
+		if(this.spriteDragonFire){
+		   this.spriteDragonFire.setPosition(this.sprite.getPositionX()+75,this.sprite.getPositionY()-5);
+		}
+		if(this.spriteDragonFireV){
+		   this.spriteDragonFireV.setPosition(this.sprite.getPositionX()+50,this.sprite.getPositionY()+55);
+		}
+		
+		
+		var statusLayer = this.getParent().getParent().getChildByTag(TagOfLayer.Status);
+								
+								
+					var percent = this.sprite.gun_heat/10;
+					var def_width = 66;
+					//debugger
+					statusLayer.hot_bar.setAnchorPoint(cc.p(0, .5));
+					statusLayer.hot_bar.setScaleX(percent);
+					//var curr_width = statusLayer.hot_bar.getBoundingBox().width;
+					//statusLayer.hot_bar.setPosition(cc.p(150+def_width/2*(percent)-curr_width/2*(1-percent),statusLayer.hot_bar.getPositionY()));
+		
+		
+		
+        if (this.stat == RunnerStat.jumpUp) {
+            if (vel.y < 0.1) {
+                this.stat = RunnerStat.jumpDown;
+                this.sprite.stopAllActions();
+                this.sprite.runAction(this.jumpDownAction);
+            }
+        } else if (this.stat == RunnerStat.jumpDown) {
+            if (vel.y == 0) {
+                this.stat = RunnerStat.running;
+                this.sprite.stopAllActions();
+                this.sprite.runAction(this.runningAction);
+            }
+        }
+
+    }
+
+});

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="20" height="10" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="aggs" tilewidth="32" tileheight="32">
+  <image source="aggs.jpg" width="640" height="320"/>
+ </tileset>
+ <layer name="houses1" width="20" height="10">
+  <data encoding="base64" compression="zlib">
+   eJytx0cVg1AABdG/I2CBgASKhoAGwALFAsUCxQLFAsVbxgNvcc+ccYwxFj6w4bx8Hy6+8AQfIESEWPAJfqKmyJGJWqBEhRqN4Ft06DEIfsSEGYvgV2zYcQj+xIUbj+D/0hFMWQ==
+  </data>
+ </layer>
+ <layer name="houses0" width="20" height="10">
+  <data encoding="base64" compression="zlib">
+   eJytx0cVg1AABdG/I2CBgASKhoAGwALFAsUCxQLFAsVbxgNvcc+ccYwxFj6w4bx8Hy6+8AQfIESEWPAJfqKmyJGJWqBEhRqN4Ft06DEIfsSEGYvgV2zYcQj+xIUbj+D/0hFMWQ==
+  </data>
+ </layer>
+</map>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="20" height="10" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="castle" tilewidth="32" tileheight="32">
+  <image source="castle.png" width="768" height="200"/>
+ </tileset>
+ <layer name="background" width="20" height="10">
+  <data encoding="base64" compression="zlib">
+   eJyNzslqQkEQheHrrOQJjDOC+8QZwb2zomYfE2fIItGFmsQJXFzjO/sLHSgahF58cIo+dJXDsiwnXHDDAy988COABzgMe0E8IoQwIogihjgSSCJl2HvCM9LIIIsc8iigiBLKhr0KqqihjgaaaKGNDrp4Mey9YoA3vGOIEcaYYIo5Pgx7K6yxwTd+8IstdtjjiJNhzxZ7lyLPxN5b/tLmez1b7L2IfBB7b/mszfd6C3XXp7pBzj2lr73rXZn/1F22uuF/lv/1tHe9K/MVkGxEJw==
+  </data>
+ </layer>
+ <layer name="grass" width="20" height="10">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2DgQBEQFwNxCRCXorGJVYfM7gLibiDuAeJeNDYywKcOmQ0AIDsQ+Q==
+  </data>
+ </layer>
+ <objectgroup name="coin">
+  <object x="404" y="226"/>
+ </objectgroup>
+ <objectgroup name="rock">
+  <object x="494" y="47"/>
+  <object x="497" y="234"/>
+  <object x="544" y="47"/>
+  <object x="544" y="234"/>
+ </objectgroup>
+ <objectgroup name="charBig">
+  <object x="559" y="139"/>
+ </objectgroup>
+ <objectgroup name="pink">
+  <object x="433" y="108"/>
+ </objectgroup>
+ <objectgroup name="chick">
+  <object x="562" y="78"/>
+  <object x="559" y="200"/>
+ </objectgroup>
+ <objectgroup name="eagle"/>
+ <objectgroup name="hat"/>
+ <objectgroup name="white"/>
+ <objectgroup name="car"/>
+ <objectgroup name="bomb"/>
+ <objectgroup name="ice"/>
+ <objectgroup name="child">
+  <object x="289" y="227"/>
+ </objectgroup>
+ <objectgroup name="zomby">
+  <object x="520.003" y="91.9969" rotation="-180.355"/>
+  <object x="521" y="190"/>
+ </objectgroup>
+ <objectgroup name="bomber">
+  <object x="349" y="96"/>
+ </objectgroup>
+ <objectgroup name="ground">
+  <object x="2" y="255" width="219" height="65"/>
+  <object x="321" y="255" width="318" height="64"/>
+ </objectgroup>
+ <objectgroup name="ball">
+  <object x="416" y="63"/>
+ </objectgroup>
+</map>

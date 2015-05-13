@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="30" height="10" tilewidth="76" tileheight="57">
+ <tileset firstgid="1" name="0_0" tilewidth="76" tileheight="57" spacing="1" margin="1">
+  <image source="0_0.png" width="774" height="581"/>
+ </tileset>
+ <tileset firstgid="101" name="0_0_ground" tilewidth="76" tileheight="57" spacing="1" margin="1">
+  <image source="0_0_ground.png" width="78" height="117"/>
+ </tileset>
+ <layer name="grass" width="30" height="10">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo2AUUArSBshOEE5FwwwUiBGD03BgBgrEiMUA+j4WOA==
+  </data>
+ </layer>
+ <objectgroup name="coin"/>
+ <objectgroup name="rock"/>
+ <objectgroup name="charBig">
+  <object x="496" y="349"/>
+  <object x="495" y="166"/>
+ </objectgroup>
+ <objectgroup name="pink"/>
+ <objectgroup name="chick"/>
+ <objectgroup name="eagle"/>
+ <objectgroup name="hat"/>
+ <objectgroup name="white"/>
+ <objectgroup name="car">
+  <object x="683" y="271"/>
+ </objectgroup>
+ <objectgroup name="bomb"/>
+ <objectgroup name="child"/>
+ <objectgroup name="zomby"/>
+ <objectgroup name="bomber">
+  <object x="684" y="167"/>
+ </objectgroup>
+ <objectgroup name="ground">
+  <object x="2" y="515" width="376" height="54"/>
+  <object x="457" y="514" width="302" height="55"/>
+  <object x="837" y="515" width="302" height="55"/>
+  <object x="1216" y="516" width="1063" height="53"/>
+ </objectgroup>
+ <objectgroup name="ball"/>
+ <objectgroup name="lazer"/>
+ <objectgroup name="rock_sharp">
+  <object x="499" y="425"/>
+  <object x="495" y="254"/>
+  <object x="495" y="80"/>
+ </objectgroup>
+ <objectgroup name="boss0"/>
+</map>

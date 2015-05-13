@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="20" height="10" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="levelWINTER" tilewidth="32" tileheight="32">
+  <image source="levelWINTER.png" width="640" height="274"/>
+ </tileset>
+ <tileset firstgid="161" name="levelWINTER_ground" tilewidth="32" tileheight="32">
+  <image source="levelWINTER_ground.png" width="64" height="96"/>
+ </tileset>
+ <layer name="background" width="20" height="10">
+  <data encoding="base64" compression="zlib">
+   eJyVzNlWDQAABdAbCUWRVEoDmpTSgEQqY0k0UCoaNCMSUqiQIVJEXQqlT7U/oIectfZa57yckEAgsInNhLKFMLayje2EE8EOdhJJFLvYTTR7iGEvscQRzz4SSGQ/SSSTQioHOMgh0kgng0yyOEw2ORwhlzyOkk8BhRRxjOOcoJiTlHCK05RyhjLKqeAs5zjPBS5yiUqquEw1V6jhKteopY56GrjODRpp4ibNtNDKLW7TRjsddHKHLrrpoZc++hngLve4zyAPeMgQjxjmMU94ygjPGGWM57zgJeNMMMkrXvOGKd7yjvd8YJqPfGKGz8wyxxe+Ms83vrPAIkF+8JMllvnFb/6wwip/WQtsLMF1dnCdvtH8z98/Zi04Iw==
+  </data>
+ </layer>
+ <layer name="grass" width="20" height="10">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo4B4sBCIFxGg0dXBwCIs5iwG4iUEaAYsfAYonwFNfikQLyNAM2DhM0D5DGjyAEdSHL0=
+  </data>
+ </layer>
+ <objectgroup name="coin">
+  <object x="325" y="120"/>
+  <object x="323" y="232"/>
+ </objectgroup>
+ <objectgroup name="rock">
+  <object x="559" y="236"/>
+ </objectgroup>
+ <objectgroup name="charBig">
+  <object x="183" y="224" width="19" height="19"/>
+  <object x="498" y="141"/>
+  <object x="586" y="236"/>
+ </objectgroup>
+ <objectgroup name="pink">
+  <object x="188" y="123"/>
+  <object x="501" y="236"/>
+ </objectgroup>
+ <objectgroup name="chick">
+  <object x="267" y="144"/>
+  <object x="617" y="237"/>
+ </objectgroup>
+ <objectgroup name="eagle">
+  <object x="48" y="109"/>
+  <object x="50" y="211"/>
+ </objectgroup>
+ <objectgroup name="hat">
+  <object x="397" y="102"/>
+  <object x="401" y="220"/>
+ </objectgroup>
+ <objectgroup name="white">
+  <object x="57" y="33"/>
+ </objectgroup>
+ <objectgroup name="car"/>
+ <objectgroup name="bomb"/>
+ <objectgroup name="ice"/>
+ <objectgroup name="child"/>
+ <objectgroup name="zomby"/>
+ <objectgroup name="bomber"/>
+ <objectgroup name="ground">
+  <object x="8" y="255" width="277" height="64"/>
+  <object x="320" y="254" width="96" height="65"/>
+  <object x="480" y="256" width="32" height="64"/>
+  <object x="576" y="255" width="61" height="64"/>
+ </objectgroup>
+ <objectgroup name="ball">
+  <object x="575" y="94"/>
+ </objectgroup>
+ <objectgroup name="lazer">
+  <object x="264" y="173"/>
+ </objectgroup>
+ <objectgroup name="rock_sharp"/>
+</map>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="20" height="10" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="levelWINTER" tilewidth="32" tileheight="32">
+  <image source="levelWINTER.png" width="640" height="274"/>
+ </tileset>
+ <tileset firstgid="161" name="levelWINTER_ground" tilewidth="32" tileheight="32">
+  <image source="levelWINTER_ground.png" width="64" height="96"/>
+ </tileset>
+ <layer name="background" width="20" height="10">
+  <data encoding="base64" compression="zlib">
+   eJytzFc3FgAAgOGvUFEZRZJQiNKipCEhESqrQmlZDVREkREqJSlUQjJ+qufSlYtO7znP7bspEAhsJohgQtjCVrYRShjb2cFOwokgkih2sZtoYthDLHuJYx/x7CeBRJI4wEGSSSGVQ6SRzmGOkMFRjnGcE5wkkyxOcZpszpDDWc5xngvkcpE8LpFPAYVcpogrFFPCVUopo5xrXOcGFVRSRTU13OQWt6mljnrucJcG7nGfBzzkEY000UwLrTzmCU95RhvtdPCcF7ykky5e0U0Pr3lDL328pZ8BBhniHcOMMMp7PvCRMT7xmXG+MMFXJvnGd6aYZoYf/OQXs/xmjnkW+MMif1limRVWAxs3u87/6F9+ayBVNc8=
+  </data>
+ </layer>
+ <layer name="grass" width="20" height="10">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFo4B4sBCIF+GgiVWHTC8G4iU4aGSATx0yvRSIl+GgkQE+dcg0AFEZIJI=
+  </data>
+ </layer>
+ <objectgroup name="coin"/>
+ <objectgroup name="rock"/>
+ <objectgroup name="charBig"/>
+ <objectgroup name="pink"/>
+ <objectgroup name="chick"/>
+ <objectgroup name="eagle"/>
+ <objectgroup name="hat"/>
+ <objectgroup name="white"/>
+ <objectgroup name="car"/>
+ <objectgroup name="bomb"/>
+ <objectgroup name="ice"/>
+ <objectgroup name="child"/>
+ <objectgroup name="zomby"/>
+ <objectgroup name="bomber"/>
+ <objectgroup name="ground">
+  <object x="2" y="255" width="219" height="65"/>
+  <object x="321" y="255" width="318" height="64"/>
+ </objectgroup>
+ <objectgroup name="lazer"/>
+ <objectgroup name="rock_sharp">
+  <object x="508" y="46"/>
+  <object x="427" y="154"/>
+ </objectgroup>
+</map>
