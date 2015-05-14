@@ -1,11 +1,88 @@
 var MapLayer = cc.LayerGradient.extend({
     // constructor
-    ctor : function(){
+    ctor : function(space){
         //1. call super class's ctor function
+		
+		this.space = space;
         this._super();
     },
-    init:function () {
+    init:function (space) {
         this._super();
+		
+		
+		
+		var winSize = cc.director.getWinSize();
+		
+		this._debugNode = new cc.PhysicsDebugNode(this.space);
+       this._debugNode.setVisible(true);
+      this.addChild(this._debugNode, 10);
+	  
+	cc.spriteFrameCache.addSpriteFrames(res.charBig_plist);
+        this.spriteSheetChar = new cc.SpriteBatchNode(res.charBig_png);
+		this.sprite = new cc.PhysicsSprite("#robo00.png");//dragon00
+        var contentSize = this.sprite.getContentSize();
+        // init body
+        this.body = new cp.Body(1, cp.momentForBox(1, contentSize.width, contentSize.height));
+        this.body.p = cc.p(winSize.width / 2, winSize.height / 2);
+        //this.body.applyImpulse(cp.v(80, 0), cp.v(80, 0));//run speed
+        this.space.addBody(this.body);
+        this.shape = new cp.BoxShape(this.body, contentSize.width , contentSize.width);
+		      
+        this.space.addShape(this.shape);
+        this.sprite.setTag(SpriteTag.runner)
+        this.sprite.setBody(this.body);
+        this.spriteSheetChar.addChild(this.sprite);
+		
+		var v = cp.v;
+		
+		
+		var wallBottom = new cp.SegmentShape(this.space.staticBody,
+            cp.v(0, this.height),// start point
+            cp.v(4294967295, this.height),// MAX INT:4294967295
+            0);// thickness of wall
+		 this.space.addStaticShape(wallBottom);
+		
+		
+		
+		
+		var boxOffset = v(320, 320);
+		var posA = v( 50, 60);
+		var posB = v(110, 60);
+		var posC = v(160, 90);
+		var posD = v(210, 90);
+		var posF = v(260, 90);
+		var addBall = function(pos)
+	{
+		var radius = 15;
+		var mass = 1;
+		var body = this.space.addBody(new cp.Body(mass, cp.momentForCircle(mass, 0, radius, v(0,0))));
+		body.setPos(v.add(pos, boxOffset));
+		
+		var shape = this.space.addShape(new cp.CircleShape(body, radius, v(0,0)));
+		shape.setElasticity(0);
+		shape.setFriction(0.7);
+		
+		return body;
+	}.bind(this);
+		body1 = addBall(posA);
+		body2 = addBall(posB);
+		body3 = addBall(posC);
+		body4 = addBall(posD);
+		body5 = addBall(posF);
+		body2.setAngle(Math.PI);
+		body3.setAngle(Math.PI);
+		body4.setAngle(Math.PI);
+		body5.setAngle(Math.PI);
+		this.space.addConstraint(new cp.PivotJoint(body1, this.space.staticBody, v(winSize.width/2, winSize.height)));
+		this.space.addConstraint(new cp.PinJoint(body1, body2, v(15,0), v(15,0)));
+		this.space.addConstraint(new cp.PinJoint(body2, body3, v(15,0), v(15,0)));
+		this.space.addConstraint(new cp.PinJoint(body3, body4, v(15,0), v(15,0)));
+		this.space.addConstraint(new cp.PinJoint(body4, body5, v(15,0), v(15,0)));
+		//this.space.addConstraint(new cp.PivotJoint(body5, this.space.staticBody, v(winSize.width/2, winSize.height)));
+		//GrooveJoint//v(-30, -10), v(-30, -40), v(0,0)));
+		//this.space.addConstraint(new cp.DampedSpring(this.body, body5, v(-30, 0), v(0,0), 50, 20, 10));
+		this.space.addConstraint(new cp.SlideJoint(this.body, body5, v(15,0), v(15,0), 20, 40));
+		
 		
 		cc.spriteFrameCache.addSpriteFrames(res.charBig_plist);
 		
@@ -13,7 +90,7 @@ var MapLayer = cc.LayerGradient.extend({
 		var color2 = cc.color(0,0,0)
 		this.setColor(color1,color2);
 		//debugger
-		var winSize = cc.director.getWinSize();
+		
 		var centerPos = cc.p(winSize.width / 2, winSize.height / 2);
 		var spritebg = new cc.Sprite(res.helloBG_png);
         spritebg.setPosition(centerPos);
