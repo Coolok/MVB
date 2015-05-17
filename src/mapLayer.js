@@ -31,26 +31,44 @@ var MapLayer = cc.LayerGradient.extend({
         this.space.addShape(this.shape);
         this.sprite.setTag(SpriteTag.runner)
         this.sprite.setBody(this.body);
-        this.spriteSheetChar.addChild(this.sprite);
+        //this.spriteSheetChar.addChild(this.sprite);
+		this.addChild(this.sprite);
+		
+		
+		this.spriteMenu = new cc.PhysicsSprite("#menu_button.png");
+		var contentSizeMenu = this.spriteMenu.getContentSize();
+        // init body
+        this.bodyMenu = new cp.Body(1, cp.momentForBox(1, contentSizeMenu.width, contentSizeMenu.height));
+        this.bodyMenu.p = cc.p(winSize.width / 2, winSize.height*.1);
+        //this.body.applyImpulse(cp.v(80, 0), cp.v(80, 0));//run speed
+        this.space.addBody(this.bodyMenu);
+        this.shapeMenu = new cp.BoxShape(this.bodyMenu, contentSizeMenu.width , contentSizeMenu.height);
+		      
+        this.space.addShape(this.shapeMenu);
+        //this.spriteMenu.setTag(SpriteTag.runner)
+        this.spriteMenu.setBody(this.bodyMenu);
+        //this.spriteSheetChar.addChild(this.spriteMenu);
+		this.addChild(this.spriteMenu);
+		
 		
 		var v = cp.v;
 		
 		
 		var wallBottom = new cp.SegmentShape(this.space.staticBody,
-            cp.v(0, this.height),// start point
-            cp.v(4294967295, this.height),// MAX INT:4294967295
+            cp.v(0, 0),// start point
+            cp.v(4294967295, 0),// MAX INT:4294967295
             0);// thickness of wall
 		 this.space.addStaticShape(wallBottom);
 		
 		
 		
 		
-		var boxOffset = v(320, 320);
-		var posA = v( 50, 60);
-		var posB = v(110, 60);
-		var posC = v(160, 90);
-		var posD = v(210, 90);
-		var posF = v(260, 90);
+		var boxOffset = v(0, 0);
+		var posA = v(winSize.width/2,winSize.height- winSize.height*0.1);
+		var posB = v(winSize.width/2, winSize.height- winSize.height*0.2);
+		var posC = v(winSize.width/2, winSize.height- winSize.height*0.3);
+		var posD = v(winSize.width/2, winSize.height- winSize.height*0.4);
+		var posF = v(winSize.width/2, winSize.height- winSize.height*0.5);
 		var addBall = function(pos)
 	{
 		var radius = 15;
@@ -64,17 +82,17 @@ var MapLayer = cc.LayerGradient.extend({
 		
 		return body;
 	}.bind(this);
-		body1 = addBall(posA);
-		body2 = addBall(posB);
-		body3 = addBall(posC);
-		body4 = addBall(posD);
-		body5 = addBall(posF);
+		this.body1 = body1 = addBall(posA);
+		this.body2 = body2 = addBall(posB);
+		this.body3 = body3 = addBall(posC);
+		this.body4 = body4 = addBall(posD);
+		this.body5 = body5 = addBall(posF);
 		body2.setAngle(Math.PI);
 		body3.setAngle(Math.PI);
 		body4.setAngle(Math.PI);
 		body5.setAngle(Math.PI);
-		this.space.addConstraint(new cp.PivotJoint(body1, this.space.staticBody, v(winSize.width/2, winSize.height)));
-		this.space.addConstraint(new cp.PinJoint(body1, body2, v(15,0), v(15,0)));
+		this.space.addConstraint(new cp.DampedSpring(body1, this.space.staticBody, v(0, 0), v(winSize.width/2, winSize.height), 20, 320, 10));//cp.PivotJoint(body1, this.space.staticBody, v(winSize.width/2, winSize.height)));
+		this.space.addConstraint(new cp.DampedSpring(body1, body2, v(0, 0), v(0,0), 20, 320, 10));//cp.PinJoint(body1, body2, v(15,0), v(15,0)));
 		this.space.addConstraint(new cp.PinJoint(body2, body3, v(15,0), v(15,0)));
 		this.space.addConstraint(new cp.PinJoint(body3, body4, v(15,0), v(15,0)));
 		this.space.addConstraint(new cp.PinJoint(body4, body5, v(15,0), v(15,0)));
@@ -82,6 +100,71 @@ var MapLayer = cc.LayerGradient.extend({
 		//GrooveJoint//v(-30, -10), v(-30, -40), v(0,0)));
 		//this.space.addConstraint(new cp.DampedSpring(this.body, body5, v(-30, 0), v(0,0), 50, 20, 10));
 		this.space.addConstraint(new cp.SlideJoint(this.body, body5, v(15,0), v(15,0), 20, 40));
+		this.space.addConstraint(new cp.SlideJoint(this.bodyMenu, this.body, v(contentSizeMenu.width/2,0), v(15,0), 20, 140));
+		this.space.addConstraint(new cp.SlideJoint(this.bodyMenu, this.body, v(-contentSizeMenu.width/2,0), v(15,0), 20, 140));
+		
+		
+		
+		debugger
+		var mouseBody = this.mouseBody = new cp.Body(Infinity, Infinity);
+		
+		var GRABABLE_MASK_BIT = 1<<31;
+
+		cc.eventManager.addListener(
+			{
+				event: cc.EventListener.MOUSE, 
+				onMouseMove: function (event) { 
+				
+					var point = event.getLocation();
+					var target = event.getCurrentTarget();
+					var delta = event.getDelta(); 
+					if(this.waitSwitcher) {
+							//target.x+=delta.x;
+								//target.y+=delta.y;
+									//target.setPosition(p)
+									//target.getBody().resetForces()
+							
+							this.mouseBody.p=point;
+							//debugger
+							
+						}
+					
+				}.bind(this), 
+				onMouseUp: function(event){
+					if(this.waitSwitcher){
+						this.target = event.getCurrentTarget();
+						this.space.removeConstraint(this.mouseJoint);
+
+					}
+					this.waitSwitcher = false;
+					this.target =null;
+				}.bind(this), 
+				onMouseDown: function(event) {
+					this.target = event.getCurrentTarget();  
+					var locationInNode = this.target.convertToNodeSpace(event.getLocation());    
+					var s = this.target.getContentSize();
+					cc.log(locationInNode);
+					cc.log("--------");
+					var point = event.getLocation();
+					var rect = cc.rect(0, 0, s.width, s.height);
+					cc.log(rect);
+					this.mouseBody.p=point;
+					if (cc.rectContainsPoint(rect, locationInNode)) {       
+						this.waitSwitcher = true;
+						event.stopPropagation();
+						//debugger
+					}
+					var shape = this.space.pointQueryFirst(point, GRABABLE_MASK_BIT, cp.NO_GROUP);
+							if(shape){
+								var body = shape.body;
+								var mouseJoint = this.mouseJoint = new cp.PivotJoint(mouseBody, body, v(0,0), body.world2Local(point));
+
+								mouseJoint.maxForce = 50000;
+								mouseJoint.errorBias = Math.pow(1 - 0.15, 60);
+								this.space.addConstraint(mouseJoint);
+							}
+				}.bind(this)
+			},  this.spriteMenu);
 		
 		
 		cc.spriteFrameCache.addSpriteFrames(res.charBig_plist);
@@ -274,8 +357,29 @@ var MapLayer = cc.LayerGradient.extend({
 		labelShop.setColor(cc.color(255,255,255,0.5));
 		labelShop.setPosition(cc.p(menuItemNextLevel.getBoundingBox().width/2-13,menuItemNextLevel.getBoundingBox().height/2-2));
 		menuItemNextLevel.addChild(labelShop,21);
-	
+		
+		
+		this.line = new cc.DrawNode();
+		this.addChild(this.line);
+		
+		this.lineCubicBezier = new cc.DrawNode();
+		this.addChild(this.lineCubicBezier);
+		
+		this.lineCubicBezier.lineCap = "round";
+		this.scheduleUpdate(0);
     },
+	update:function (dt) {
+		this.line.clear();
+		this.lineCubicBezier.clear();
+		this.lineCubicBezier.drawCubicBezier(//drawQuadBezier
+			cc.p(cc.director.getWinSize().width/2,cc.director.getWinSize().height), 
+			cc.p(this.body2.getPos().x, this.body2.getPos().y),
+			cc.p(this.body4.getPos().x, this.body4.getPos().y), 
+			cc.p(this.body.getPos().x, this.body.getPos().y), 
+			30, 5, cc.Color(255, 0, 255, 255))
+		//this.line.drawSegment(cc.p(cc.director.getWinSize().width/2,cc.director.getWinSize().height), this.body1.getPos(),5,cc.Color(255, 0, 255, 255) );
+		
+	},
 	startLevel:function (sender) {
 	    //debugger
 		var world = sender.getTag().split('_')[0];
