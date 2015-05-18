@@ -4,6 +4,11 @@ var MapScene = cc.Scene.extend({
         this._super();
         this.init();
     },
+	onEnter: function  () {  
+        this ._super ();  
+        // Custom loading of layer  
+       debugger
+    }, 
     init:function () {
         //debugger
 		

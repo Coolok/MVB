@@ -371,12 +371,23 @@ var MapLayer = cc.LayerGradient.extend({
 	update:function (dt) {
 		this.line.clear();
 		this.lineCubicBezier.clear();
-		this.lineCubicBezier.drawCubicBezier(//drawQuadBezier
+		var  centerPos = cc.p (cc.director.getWinSize().width / 2, cc.director.getWinSize().height / 2);
+		var  vertices4 = [
+            cc.p (cc.director.getWinSize().width/2,cc.director.getWinSize().height),
+			cc.p (this.body1.getPos().x , this.body1.getPos().y),
+            cc.p (this.body2.getPos().x , this.body2.getPos().y),
+            cc.p (this.body3.getPos().x , this.body3.getPos().y),
+            cc.p (this.body4.getPos().x , this.body4.getPos().y),
+            cc.p (this.body5.getPos().x, this.body5.getPos().y)
+        ];
+        this.line.drawCardinalSpline (vertices4, 0.5, 100, 2, cc.color (255, 255, 255, 255));
+		
+		/*this.lineCubicBezier.drawCubicBezier(//drawQuadBezier
 			cc.p(cc.director.getWinSize().width/2,cc.director.getWinSize().height), 
 			cc.p(this.body2.getPos().x, this.body2.getPos().y),
 			cc.p(this.body4.getPos().x, this.body4.getPos().y), 
 			cc.p(this.body.getPos().x, this.body.getPos().y), 
-			30, 5, cc.Color(255, 0, 255, 255))
+			30, 5, cc.Color(255, 0, 255, 255))*/
 		//this.line.drawSegment(cc.p(cc.director.getWinSize().width/2,cc.director.getWinSize().height), this.body1.getPos(),5,cc.Color(255, 0, 255, 255) );
 		
 	},
