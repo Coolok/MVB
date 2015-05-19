@@ -48,7 +48,7 @@ var MenuLayer = cc.LayerGradient.extend({
 		spritebg1.setScale(2);
 		spritebg1.setOpacity(100);
         //this.addChild(spritebg1);
-		Sound.playMenuBgMusic();
+		//Sound.playMenuBgMusic();
 		var stencil = new cc.Node();
 		stencil.addChild(spritebg2);
 		stencil.addChild(spritebg3);
