@@ -14,7 +14,7 @@ var MapScene = cc.Scene.extend({
 		
 		 this.space2 = new cp.Space();
         // Gravity
-        this.space2.gravity = cp.v(0, -100);
+        this.space2.gravity = cp.v(0, -50);
 		     this.space2.setIterations(120)
              //this.space2.gravity = cp.v(0, -300)
              this.space2.collisionSlop = .5

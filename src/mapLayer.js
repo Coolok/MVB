@@ -9,7 +9,31 @@ var MapLayer = cc.LayerGradient.extend({
     init:function (space) {
         this._super();
 		
-		
+		 var BreakableJointPostSolve = function(/*cpSpace*/ space) {
+				/*cpConstraint*/ var joint = this;
+				/*cpFloat*/ var dt = space.getCurrentTimeStep();
+//debugger
+				// Convert the impulse to a force by dividing it by the timestep.
+				/*cpFloat*/ var force = joint.getImpulse()/dt;
+				/*cpFloat*/ var maxForce = joint.maxForce;
+				// If the force is almost as big as the joint's max force, break it.
+				if(force > 0.2*maxForce){debugger
+					space.addPostStepCallback(/*/*(cpPostStepFunc)*/
+					
+						 function  (){
+							debugger
+							space.removeConstraint(joint);
+					}
+					
+					
+					
+					, joint, null);
+					
+					
+					   
+			
+				}
+			}
 		
 		
 		
@@ -26,12 +50,12 @@ var MapLayer = cc.LayerGradient.extend({
 
            
             
-			LINK_COUNT=14
+			LINK_COUNT=7
 			CHAIN_COUNT=4
 
             /*cpFloat*/ var mass = 1;
             /*cpFloat*/ var width = 10;
-            /*cpFloat*/ var height = 30;
+            /*cpFloat*/ var height = 50;
 
             /*cpFloat*/ var spacing = width*0.3;
 
@@ -57,7 +81,8 @@ var MapLayer = cc.LayerGradient.extend({
                         constraint = space.addConstraint(new cp.SlideJoint(body, prev, cp.v(0, height/2), cp.v(0, -height/2), 0, spacing));
                     }
 
-                 
+					constraint.maxForce = (breakingForce);
+                    constraint.postSolve = BreakableJointPostSolve.bind(constraint);
 
                     prev = body;
                 }
@@ -71,9 +96,14 @@ var MapLayer = cc.LayerGradient.extend({
             shape = space.addShape(new cp.CircleShape(body, radius, cp.vzero));
             shape.setElasticity(0.0);
             shape.setFriction(0.9);
+			
+			
+			
+			
+					
 		//////////////////////////////////////
 		
-		
+		//////////////////////////////////////
 		
 		
 		
